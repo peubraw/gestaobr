@@ -73,13 +73,13 @@ export interface Licitacao {
   titulo?: string;
   objeto?: string;
   orgao?: string;
+  modalidade?: string;
+  valor?: number | null;
   ano?: string | number;
+  data_abertura?: string;
+  data_encerramento?: string;
   data_publicacao?: string;
   url?: string;
-  // legacy fields kept for compatibility
-  numero?: string;
-  valor?: number;
-  situacao?: string;
 }
 
 export interface Licitacoes {
@@ -118,13 +118,26 @@ export interface DiarioEdicao {
   link?: string;
   url?: string;
   edition_number?: string;
+  numero_edicao?: string;
+  resumo?: string;
+}
+
+export interface DiarioPortal {
+  nome: string;
+  url: string;
+  url_busca?: string;
 }
 
 export interface Diario {
   disponivel: boolean;
   total_edicoes?: number;
+  total_edicoes_indexadas?: number | null;
   edicoes_recentes?: DiarioEdicao[];
   link_portal?: string;
+  link_consulta?: string;
+  portal_municipal?: DiarioPortal;
+  fonte?: string;
+  aviso?: string;
   erro?: string;
 }
 

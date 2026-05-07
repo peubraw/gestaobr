@@ -278,54 +278,66 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
           {/* Licitações */}
           <section id="licitacoes" className="mc-card">
-            <SectionHeader icon={ShoppingBag} title={`Licitações e Compras Públicas ${licitacoes.ano ? `(${licitacoes.ano})` : ''}`} />
+            <SectionHeader icon={ShoppingBag} title="Licitações e Compras Públicas" />
             {licitacoes.disponivel && licitacoes.licitacoes && licitacoes.licitacoes.length > 0 ? (
               <div className="flex flex-col gap-2">
-                <div className="text-[10px] font-mono text-gray-500 mb-1">DESPESAS POR FUNÇÃO — SICONFI / RREO ANEXO 02</div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-gray-500 uppercase">PROPOSTAS ABERTAS — PNCP / LEI 14.133/2021</span>
+                  {licitacoes.total != null && (
+                    <span className="text-[10px] font-mono font-bold text-gov-blue bg-blue-50 px-2 py-0.5 border border-blue-200">
+                      {licitacoes.total} TOTAL
+                    </span>
+                  )}
+                </div>
                 {licitacoes.licitacoes.map((lic: Licitacao, i: number) => (
-                  <div key={i} className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-xs font-mono font-bold text-gov-dark truncate max-w-[60%]">
+                  <a key={i} href={lic.url || licitacoes.link_pncp || '#'} target="_blank" rel="noreferrer"
+                    className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
+                    <div className="flex justify-between items-start gap-2 mb-1">
+                      <span className="text-[11px] font-mono font-bold text-gov-dark leading-snug line-clamp-2 flex-1">
                         {lic.objeto || lic.titulo || '—'}
                       </span>
-                      <span className="text-[10px] font-mono text-gray-500 font-bold">
-                        {lic.ano || '—'}
-                      </span>
+                      {lic.valor != null && lic.valor > 0 && (
+                        <span className="text-[10px] font-mono font-bold text-gov-green whitespace-nowrap">
+                          R$ {Number(lic.valor).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </span>
+                      )}
                     </div>
-                  </div>
+                    <div className="flex items-center gap-3 flex-wrap mt-1">
+                      {lic.modalidade && (
+                        <span className="text-[9px] font-mono text-white bg-gov-blue px-1.5 py-0.5 uppercase">{lic.modalidade}</span>
+                      )}
+                      {lic.orgao && (
+                        <span className="text-[9px] font-mono text-gray-500 truncate max-w-[55%]">{lic.orgao}</span>
+                      )}
+                      {lic.data_encerramento && (
+                        <span className="text-[9px] font-mono text-gray-400 ml-auto">enc. {lic.data_encerramento}</span>
+                      )}
+                    </div>
+                  </a>
                 ))}
                 {licitacoes.link_pncp && (
-                  <a href={licitacoes.link_pncp} target="_blank" rel="noreferrer" className="mt-2 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
-                    CONSULTAR LICITAÇÕES NO PNCP →
+                  <a href={licitacoes.link_pncp} target="_blank" rel="noreferrer"
+                    className="mt-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    VER TODAS NO PNCP →
                   </a>
                 )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: PNCP — TESOURO NACIONAL</div>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200">
                   <Globe size={16} className="text-gov-blue shrink-0" />
                   <span className="text-[11px] font-mono text-gov-dark leading-snug">
-                    {licitacoes.nota || 'Licitações disponíveis no Portal Nacional de Compras Públicas (PNCP).'}
+                    Nenhuma licitação com proposta aberta no momento para este município.
                   </span>
                 </div>
-                {licitacoes.total !== undefined && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-gray-50 border border-gray-200 p-3 text-center">
-                      <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Registros PNCP</div>
-                      <div className="text-2xl font-bold font-mono text-gov-dark">{licitacoes.total}</div>
-                    </div>
-                    <div className="bg-gray-50 border border-gray-200 p-3 text-center">
-                      <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Ano de Referência</div>
-                      <div className="text-2xl font-bold font-mono text-gov-dark">{licitacoes.ano || '—'}</div>
-                    </div>
-                  </div>
-                )}
                 {licitacoes.link_pncp && (
-                  <a href={licitacoes.link_pncp} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
-                    ACESSAR PORTAL DE LICITAÇÕES (PNCP) →
+                  <a href={licitacoes.link_pncp} target="_blank" rel="noreferrer"
+                    className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    CONSULTAR HISTÓRICO NO PNCP →
                   </a>
                 )}
-                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: PNCP / SICONFI — TESOURO NACIONAL</div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: PNCP — LEI 14.133/2021</div>
               </div>
             )}
           </section>
@@ -548,47 +560,71 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
           {/* Diário Oficial */}
           <section id="diario" className="mc-card">
             <SectionHeader icon={Newspaper} title="Diário Oficial do Município" />
-            {diario.disponivel ? (
-              <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
+              {/* Edições indexadas pelo Querido Diário */}
+              {diario.disponivel && diario.total_edicoes_indexadas != null && (
                 <div className="bg-gray-50 border border-gov-border p-3 flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Edições Indexadas</span>
-                  <span className="text-xl font-bold text-gov-dark font-mono">{diario.total_edicoes || 0}</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Edições Indexadas (Querido Diário)</span>
+                  <span className="text-xl font-bold text-gov-dark font-mono">{diario.total_edicoes_indexadas}</span>
                 </div>
-                {diario.edicoes_recentes && diario.edicoes_recentes.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Últimas Publicações</span>
-                    {diario.edicoes_recentes.slice(0, 3).map((ed: DiarioEdicao, i: number) => (
-                      <a key={i} href={ed.url || ed.link || '#'} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
+              )}
+              {/* Últimas publicações indexadas */}
+              {diario.edicoes_recentes && diario.edicoes_recentes.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Últimas Publicações</span>
+                  {diario.edicoes_recentes.slice(0, 3).map((ed: DiarioEdicao, i: number) => (
+                    <a key={i} href={ed.url || ed.link || '#'} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
+                      <div className="flex flex-col">
                         <span className="text-xs font-mono font-bold text-gov-dark">{ed.date || ed.data || '—'}</span>
-                        <span className="text-[10px] font-bold text-gov-blue uppercase">Visualizar →</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200">
-                  <AlertCircle size={16} className="text-yellow-600 shrink-0 mt-0.5" />
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[11px] font-bold font-mono text-gov-dark uppercase tracking-wide">Município não indexado na base federal</span>
-                    <span className="text-[10px] font-mono text-gray-600">O diário oficial deste município não está disponível via Querido Diário (Open Knowledge Brasil). Acesse o portal diretamente.</span>
-                  </div>
+                        {ed.resumo && <span className="text-[10px] font-mono text-gray-500 mt-0.5 line-clamp-1">{ed.resumo}</span>}
+                      </div>
+                      <span className="text-[10px] font-bold text-gov-blue uppercase shrink-0 ml-2">Visualizar →</span>
+                    </a>
+                  ))}
                 </div>
-                {diario.link_portal && (
+              )}
+              {/* Portal municipal direto */}
+              {diario.portal_municipal && (
+                <div className="flex flex-col gap-2">
+                  {(!diario.edicoes_recentes || diario.edicoes_recentes.length === 0) && (
+                    <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200">
+                      <Newspaper size={16} className="text-gov-blue shrink-0 mt-0.5" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold font-mono text-gov-dark uppercase tracking-wide">{diario.portal_municipal.nome}</span>
+                        <span className="text-[10px] font-mono text-gray-600">Portal oficial do município disponível. Acesse para consultar publicações, leis e atos oficiais.</span>
+                      </div>
+                    </div>
+                  )}
                   <a
-                    href={diario.link_portal}
+                    href={diario.portal_municipal.url_busca || diario.portal_municipal.url}
                     target="_blank"
                     rel="noreferrer"
                     className="text-center text-xs font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 border border-blue-200 py-2 px-3 flex items-center justify-center gap-2"
                   >
                     <Globe size={12} />
-                    CONSULTAR NO QUERIDO DIÁRIO →
+                    ACESSAR PORTAL DO DIÁRIO OFICIAL →
                   </a>
-                )}
-                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: Querido Diário / Open Knowledge Brasil</div>
-              </div>
-            )}
+                </div>
+              )}
+              {/* Sem dados e sem portal */}
+              {!diario.disponivel && !diario.portal_municipal && (
+                <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200">
+                  <AlertCircle size={16} className="text-yellow-600 shrink-0 mt-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] font-bold font-mono text-gov-dark uppercase tracking-wide">Diário Oficial não indexado</span>
+                    <span className="text-[10px] font-mono text-gray-600">Este município não está disponível via Querido Diário. Consulte o site oficial da prefeitura.</span>
+                  </div>
+                </div>
+              )}
+              {diario.link_consulta && !diario.portal_municipal && (
+                <a href={diario.link_consulta} target="_blank" rel="noreferrer"
+                  className="text-center text-xs font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 border border-blue-200 py-2 px-3 flex items-center justify-center gap-2">
+                  <Globe size={12} />
+                  VERIFICAR NO QUERIDO DIÁRIO →
+                </a>
+              )}
+              <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {diario.fonte || 'Querido Diário / Open Knowledge Brasil'}</div>
+            </div>
           </section>
 
         </div>
