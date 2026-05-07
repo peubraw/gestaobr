@@ -99,6 +99,11 @@ export interface Seguranca {
   nota?: string;
 }
 
+export interface DiarioEdicao {
+  data: string;
+  link: string;
+}
+
 export interface Diario {
   disponivel: boolean;
   total_edicoes?: number;
