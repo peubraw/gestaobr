@@ -86,6 +86,10 @@ export interface Licitacoes {
   disponivel: boolean;
   licitacoes?: Licitacao[];
   licitacoes_recentes?: Licitacao[]; // legacy alias
+  link_pncp?: string;
+  ano?: number;
+  total?: number;
+  nota?: string;
 }
 
 export interface Eleicoes {
