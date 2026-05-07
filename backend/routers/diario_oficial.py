@@ -33,6 +33,15 @@ async def diario_municipio(ibge: str):
                 "fonte": "Querido Diário / OKBR",
             }
 
+        content_type = response.headers.get("content-type", "")
+        if "application/json" not in content_type:
+            return {
+                "disponivel": False,
+                "erro": "API do Querido Diário retornou HTML em vez de JSON (serviço temporariamente indisponível)",
+                "link_portal": f"https://queridodiario.ok.org.br/diarios?territory_id={ibge}",
+                "fonte": "Querido Diário / Open Knowledge Brasil",
+            }
+
         payload = response.json()
         gazettes = payload.get("results") or payload.get("gazettes") or []
 
