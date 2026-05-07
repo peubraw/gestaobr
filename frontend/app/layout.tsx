@@ -31,9 +31,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between relative z-10 gap-4">
             <div className="flex items-center gap-6">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-gov-yellow mb-0.5">
-                  Governo Federal — República Federativa do Brasil
-                </div>
                 <div className="text-2xl font-bold tracking-tight flex items-center gap-2">
                   <Activity size={24} className="text-gov-yellow" />
                   GestãoBR
