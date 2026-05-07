@@ -294,23 +294,38 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                     </div>
                   </div>
                 ))}
-                {(licitacoes as any).link_pncp && (
-                  <a href={(licitacoes as any).link_pncp} target="_blank" rel="noreferrer" className="mt-2 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
+                {licitacoes.link_pncp && (
+                  <a href={licitacoes.link_pncp} target="_blank" rel="noreferrer" className="mt-2 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
                     CONSULTAR LICITAÇÕES NO PNCP →
                   </a>
                 )}
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
-                  <AlertCircle size={20} className="text-gray-400" />
-                  <span>DADOS NÃO DISPONÍVEIS.</span>
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200">
+                  <Globe size={16} className="text-gov-blue shrink-0" />
+                  <span className="text-[11px] font-mono text-gov-dark leading-snug">
+                    {licitacoes.nota || 'Licitações disponíveis no Portal Nacional de Compras Públicas (PNCP).'}
+                  </span>
                 </div>
-                {(licitacoes as any).link_pncp && (
-                  <a href={(licitacoes as any).link_pncp} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
-                    CONSULTAR LICITAÇÕES NO PNCP →
+                {licitacoes.total !== undefined && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gray-50 border border-gray-200 p-3 text-center">
+                      <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Registros PNCP</div>
+                      <div className="text-2xl font-bold font-mono text-gov-dark">{licitacoes.total}</div>
+                    </div>
+                    <div className="bg-gray-50 border border-gray-200 p-3 text-center">
+                      <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">Ano de Referência</div>
+                      <div className="text-2xl font-bold font-mono text-gov-dark">{licitacoes.ano || '—'}</div>
+                    </div>
+                  </div>
+                )}
+                {licitacoes.link_pncp && (
+                  <a href={licitacoes.link_pncp} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    ACESSAR PORTAL DE LICITAÇÕES (PNCP) →
                   </a>
                 )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: PNCP / SICONFI — TESOURO NACIONAL</div>
               </div>
             )}
           </section>
@@ -552,21 +567,26 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                 )}
               </div>
             ) : (
-              <div className="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-2 text-sm font-mono text-gray-600">
-                  <AlertCircle size={16} className="text-yellow-500 shrink-0" />
-                  <span>DIÁRIO NÃO INDEXADO NA BASE FEDERAL.</span>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200">
+                  <AlertCircle size={16} className="text-yellow-600 shrink-0 mt-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] font-bold font-mono text-gov-dark uppercase tracking-wide">Município não indexado na base federal</span>
+                    <span className="text-[10px] font-mono text-gray-600">O diário oficial deste município não está disponível via Querido Diário (Open Knowledge Brasil). Acesse o portal diretamente.</span>
+                  </div>
                 </div>
                 {diario.link_portal && (
                   <a
                     href={diario.link_portal}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-center text-xs font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 border border-blue-200 py-2 px-3"
+                    className="text-center text-xs font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 border border-blue-200 py-2 px-3 flex items-center justify-center gap-2"
                   >
+                    <Globe size={12} />
                     CONSULTAR NO QUERIDO DIÁRIO →
                   </a>
                 )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: Querido Diário / Open Knowledge Brasil</div>
               </div>
             )}
           </section>
