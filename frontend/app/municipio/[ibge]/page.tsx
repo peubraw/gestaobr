@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Users, FileText, Building2, TrendingUp, MapPin, AlertCircle, CheckCircle2, Clock, Globe, BarChart3, Gauge, Landmark, Scale, Wallet, Activity, HeartPulse, GraduationCap, ShoppingBag, Vote, Newspaper, Banknote, Shield, Leaf, Bot } from 'lucide-react';
-import { getMunicipio, getIndicadores, getOrcamento, getCamara, getContratos, getSaude, getEducacao, getLicitacoes, getEleicoes, getDiario, getEmendas, getSeguranca, getMeioAmbiente, formatNum, Licitacao, Emenda, DiarioEdicao } from '@/lib/api';
+import { ArrowLeft, Users, FileText, Building2, TrendingUp, MapPin, AlertCircle, CheckCircle2, Clock, Globe, BarChart3, Gauge, Landmark, Scale, Wallet, Activity, HeartPulse, GraduationCap, ShoppingBag, Vote, Newspaper, Banknote, Shield, Leaf, Bot, Syringe, BookOpen, Gavel, Pill, Radio, Fuel, Factory, Droplets, Zap } from 'lucide-react';
+import { getMunicipio, getIndicadores, getOrcamento, getCamara, getContratos, getSaude, getEducacao, getLicitacoes, getEleicoes, getDiario, getEmendas, getSeguranca, getMeioAmbiente, formatNum, Licitacao, Emenda, DiarioEdicao, getVacinacao, getFnde, getTcu, getFarmaciaPopular, getNoticias, getAnp, getDatajud, getEmpresasResumo, getAna, getAneel } from '@/lib/api';
 import IaGestora from '@/components/IaGestora';
 
 export const dynamic = 'force-dynamic';
@@ -63,8 +63,9 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
   let municipio, indicadores, orcamento, camara, contratos;
   let saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente;
+  let vacinacao, fnde, tcu, farmacia, noticias, anp, datajud, empresas, ana, aneel;
   try {
-    [municipio, indicadores, orcamento, camara, contratos, saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente] = await Promise.all([
+    [municipio, indicadores, orcamento, camara, contratos, saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente, vacinacao, fnde, tcu, farmacia, noticias, anp, datajud, empresas, ana, aneel] = await Promise.all([
       getMunicipio(ibge),
       getIndicadores(ibge),
       getOrcamento(ibge),
@@ -78,6 +79,16 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
       getEmendas(ibge),
       getSeguranca(ibge),
       getMeioAmbiente(ibge),
+      getVacinacao(ibge),
+      getFnde(ibge),
+      getTcu(ibge),
+      getFarmaciaPopular(ibge),
+      getNoticias(ibge),
+      getAnp(ibge),
+      getDatajud(ibge),
+      getEmpresasResumo(ibge),
+      getAna(ibge),
+      getAneel(ibge),
     ]);
   } catch {
     notFound();
@@ -118,6 +129,16 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             <a href="#emendas" className="hover:underline">EMENDAS</a>
             <a href="#seguranca" className="hover:underline">SEGURANÇA</a>
             <a href="#meioambiente" className="hover:underline">MEIO AMBIENTE</a>
+            <a href="#vacinacao" className="hover:underline">VACINAÇÃO</a>
+            <a href="#fnde" className="hover:underline">FNDE</a>
+            <a href="#tcu" className="hover:underline">TCU</a>
+            <a href="#farmacia" className="hover:underline">FARMÁCIA</a>
+            <a href="#noticias" className="hover:underline">NOTÍCIAS</a>
+            <a href="#anp" className="hover:underline">ANP</a>
+            <a href="#datajud" className="hover:underline">DATAJUD</a>
+            <a href="#empresas" className="hover:underline">EMPRESAS</a>
+            <a href="#ana" className="hover:underline">ANA</a>
+            <a href="#aneel" className="hover:underline">ANEEL</a>
             <a href="#ia-gestora" className="hover:underline flex items-center gap-1"><Bot size={12} /> IA GESTORA</a>
           </div>
         </div>
@@ -383,6 +404,180 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             )}
           </section>
 
+          {/* Vacinação */}
+          <section id="vacinacao" className="mc-card">
+            <SectionHeader icon={Syringe} title="Cobertura Vacinal (SI-PNI)" />
+            {vacinacao ? (
+              <div className="flex flex-col gap-3">
+                {vacinacao.nota && (
+                  <div className="text-[10px] font-mono text-gray-500 bg-gray-50 p-2 border border-gray-200">
+                    {vacinacao.nota}
+                  </div>
+                )}
+                {vacinacao.coberturas && vacinacao.coberturas.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3 mb-2">
+                    {vacinacao.coberturas.map((c: any, i: number) => (
+                      <GaugeCard 
+                        key={i}
+                        title={c.vacina} 
+                        value={c.cobertura_pct != null ? formatNum(c.cobertura_pct, 1) : '—'} 
+                        pct={c.cobertura_pct} 
+                      />
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  {vacinacao.link_sipni && (
+                    <a href={vacinacao.link_sipni} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      CONSULTAR SI-PNI →
+                    </a>
+                  )}
+                  {vacinacao.link_tabnet && (
+                    <a href={vacinacao.link_tabnet} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-gray-50 py-2 border border-gray-200">
+                      DATASUS TABNET →
+                    </a>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {vacinacao.fonte || 'SI-PNI / DATASUS'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE VACINAÇÃO NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Farmácia Popular */}
+          <section id="farmacia" className="mc-card">
+            <SectionHeader icon={Pill} title="Farmácia Popular" />
+            {farmacia ? (
+              <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-green-50 border border-green-200 p-3">
+                    <div className="text-[10px] font-mono text-gov-green font-bold uppercase mb-2">Medicamentos Gratuitos</div>
+                    <ul className="text-xs font-mono text-gov-dark space-y-1">
+                      {farmacia.medicamentos_gratuitos?.map((m: string, i: number) => <li key={i}>• {m}</li>)}
+                    </ul>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3">
+                    <div className="text-[10px] font-mono text-gov-blue font-bold uppercase mb-2">Copagamento (Subsidiados)</div>
+                    <ul className="text-xs font-mono text-gov-dark space-y-1">
+                      {farmacia.medicamentos_subsidiados?.map((m: string, i: number) => <li key={i}>• {m}</li>)}
+                    </ul>
+                  </div>
+                </div>
+                {farmacia.link_portal && (
+                  <a href={farmacia.link_portal} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    VER FARMÁCIAS CREDENCIADAS →
+                  </a>
+                )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {farmacia.fonte || 'Ministério da Saúde / Farmácia Popular'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DA FARMÁCIA POPULAR NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Notícias */}
+          <section id="noticias" className="mc-card">
+            <SectionHeader icon={Radio} title="Notícias — Agências Oficiais" />
+            {noticias && noticias.noticias && noticias.noticias.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {noticias.noticias.slice(0, 5).map((n: any, i: number) => (
+                  <a key={i} href={n.link} target="_blank" rel="noreferrer" className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
+                    <span className="text-[11px] font-mono font-bold text-gov-dark leading-snug line-clamp-2 mb-1">{n.titulo}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      {n.fonte && <span className="text-[9px] font-mono text-white bg-gov-blue px-1.5 py-0.5 uppercase">{n.fonte}</span>}
+                      {n.data && <span className="text-[9px] font-mono text-gray-500">{n.data}</span>}
+                    </div>
+                  </a>
+                ))}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase mt-2">FONTE: Agência Brasil / Câmara / Senado</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>Nenhuma notícia recente encontrada para este município.</span>
+              </div>
+            )}
+          </section>
+
+          {/* DataJud */}
+          <section id="datajud" className="mc-card">
+            <SectionHeader icon={Scale} title="Dados Judiciais — DataJud/CNJ" />
+            {datajud ? (
+              <div className="flex flex-col gap-3">
+                {datajud.nota_acesso && (
+                  <div className="text-[10px] font-mono text-gray-500 bg-gray-50 p-2 border border-gray-200">
+                    {datajud.nota_acesso}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  {datajud.link_consulta_publica && (
+                    <a href={datajud.link_consulta_publica} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      CONSULTA PÚBLICA PROCESSUAL →
+                    </a>
+                  )}
+                  {datajud.link_painel_cnj && (
+                    <a href={datajud.link_painel_cnj} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-gray-50 py-2 border border-gray-200">
+                      PAINEL ESTATÍSTICO CNJ →
+                    </a>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {datajud.fonte || 'CNJ — Conselho Nacional de Justiça'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS JUDICIAIS NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* ANA - Recursos Hídricos */}
+          <section id="ana" className="mc-card">
+            <SectionHeader icon={Droplets} title="Recursos Hídricos — ANA" />
+            {ana ? (
+              <div className="flex flex-col gap-3">
+                {ana.indicadores_referencia && ana.indicadores_referencia.length > 0 && (
+                  <div className="bg-gray-50 border border-gov-border p-3">
+                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">Indicadores de Referência</div>
+                    <ul className="text-xs font-mono text-gov-dark space-y-2">
+                      {ana.indicadores_referencia.map((ind: any, i: number) => (
+                        <li key={i} className="flex justify-between border-b border-gray-200 pb-1 last:border-0 last:pb-0">
+                          <span>{ind.indicador}</span>
+                          <span className="text-gray-400 text-[10px]">{ind.fonte}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  {ana.links?.snirh && (
+                    <a href={ana.links.snirh} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      ACESSAR SNIRH →
+                    </a>
+                  )}
+                  {ana.links?.qualidade_agua && (
+                    <a href={ana.links.qualidade_agua} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-gray-50 py-2 border border-gray-200">
+                      QUALIDADE DA ÁGUA →
+                    </a>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {ana.fonte || 'ANA — Agência Nacional de Águas'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE RECURSOS HÍDRICOS NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
         </div>
 
         {/* Coluna Direita (5) */}
@@ -625,6 +820,194 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
               )}
               <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {diario.fonte || 'Querido Diário / Open Knowledge Brasil'}</div>
             </div>
+          </section>
+
+          {/* FNDE */}
+          <section id="fnde" className="mc-card">
+            <SectionHeader icon={BookOpen} title="Repasses Federais — Educação (FNDE)" />
+            {fnde ? (
+              <div className="flex flex-col gap-3">
+                {fnde.repasses && fnde.repasses.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {fnde.repasses.map((r: any, i: number) => (
+                      <a key={i} href={r.link || fnde.link_fnde || '#'} target="_blank" rel="noreferrer" className="flex justify-between items-center p-2 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-mono font-bold text-gov-blue uppercase">{r.programa}</span>
+                          <span className="text-xs font-mono text-gov-dark line-clamp-1">{r.descricao}</span>
+                        </div>
+                        {r.valor_referencia != null && (
+                          <span className="text-[10px] font-mono font-bold text-gov-green whitespace-nowrap ml-2">
+                            R$ {formatNum(r.valor_referencia, 0)}
+                          </span>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {fnde.link_fnde && (
+                  <a href={fnde.link_fnde} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    CONSULTAR SISTEMA FNDE →
+                  </a>
+                )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {fnde.fonte || 'FNDE / Tesouro Nacional'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DO FNDE NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* TCU */}
+          <section id="tcu" className="mc-card">
+            <SectionHeader icon={Gavel} title="Controle Externo — TCU" />
+            {tcu ? (
+              <div className="flex flex-col gap-3">
+                {tcu.nota && (
+                  <div className="text-[10px] font-mono text-gray-500 bg-gray-50 p-2 border border-gray-200">
+                    {tcu.nota}
+                  </div>
+                )}
+                <div className="flex flex-col gap-2">
+                  {tcu.link_certidao && (
+                    <a href={tcu.link_certidao} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      EMITIR CERTIDÃO NEGATIVA →
+                    </a>
+                  )}
+                  {tcu.link_acordaos && (
+                    <a href={tcu.link_acordaos} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      CONSULTAR ACÓRDÃOS →
+                    </a>
+                  )}
+                  {tcu.link_portal && (
+                    <a href={tcu.link_portal} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-gray-50 py-2 border border-gray-200">
+                      PORTAL DO TCU →
+                    </a>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {tcu.fonte || 'TCU — Tribunal de Contas da União'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DO TCU NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* ANP */}
+          <section id="anp" className="mc-card">
+            <SectionHeader icon={Fuel} title="Combustíveis — ANP" />
+            {anp ? (
+              <div className="flex flex-col gap-3">
+                {anp.nota && (
+                  <div className="text-[10px] font-mono text-gray-500 bg-gray-50 p-2 border border-gray-200">
+                    {anp.nota}
+                  </div>
+                )}
+                {anp.combustiveis && anp.combustiveis.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse font-mono text-xs">
+                      <thead>
+                        <tr className="bg-gray-200 text-gov-dark">
+                          <th className="p-2 border border-gray-300">PRODUTO</th>
+                          <th className="p-2 border border-gray-300 text-right">UNIDADE</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {anp.combustiveis.map((c: any, i: number) => (
+                          <tr key={i} className="hover:bg-blue-50">
+                            <td className="p-2 border border-gray-200 truncate">{c.produto}</td>
+                            <td className="p-2 border border-gray-200 text-right text-gray-500">{c.unidade}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {anp.link_painel && (
+                  <a href={anp.link_painel} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    CONSULTAR PREÇOS ATUAIS →
+                  </a>
+                )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {anp.fonte || 'ANP — Agência Nacional do Petróleo'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DA ANP NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Empresas */}
+          <section id="empresas" className="mc-card">
+            <SectionHeader icon={Factory} title="Empresas e CNPJ" />
+            {empresas ? (
+              <div className="flex flex-col gap-3">
+                {empresas.uso_api && (
+                  <div className="text-[10px] font-mono text-gray-500 bg-gray-50 p-2 border border-gray-200">
+                    {empresas.uso_api}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  {empresas.links?.receita_federal && (
+                    <a href={empresas.links.receita_federal} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      RECEITA FEDERAL →
+                    </a>
+                  )}
+                  {empresas.links?.junta_comercial && (
+                    <a href={empresas.links.junta_comercial} target="_blank" rel="noreferrer" className="flex-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-gray-50 py-2 border border-gray-200">
+                      JUNTA COMERCIAL →
+                    </a>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {empresas.fonte || 'Receita Federal / BrasilAPI'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE EMPRESAS NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* ANEEL */}
+          <section id="aneel" className="mc-card">
+            <SectionHeader icon={Zap} title="Energia Elétrica — ANEEL" />
+            {aneel ? (
+              <div className="flex flex-col gap-3">
+                {aneel.indicadores_qualidade && aneel.indicadores_qualidade.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {aneel.indicadores_qualidade.map((ind: any, i: number) => (
+                      <div key={i} className="bg-gray-50 border border-gov-border p-3">
+                        <div className="text-[10px] font-bold text-gov-blue uppercase mb-1 font-mono">{ind.indicador}</div>
+                        <div className="text-[10px] font-mono text-gray-600">{ind.descricao}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-col gap-2 mt-1">
+                  {aneel.links?.tarifas && (
+                    <a href={aneel.links.tarifas} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                      CONSULTAR TARIFAS →
+                    </a>
+                  )}
+                  {aneel.links?.qualidade_energia && (
+                    <a href={aneel.links.qualidade_energia} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-gray-50 py-2 border border-gray-200">
+                      INDICADORES DE QUALIDADE →
+                    </a>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">FONTE: {aneel.fonte || 'ANEEL — Agência Nacional de Energia Elétrica'}</div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DA ANEEL NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
           </section>
 
         </div>

@@ -1,18 +1,28 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import routers.ana as ana  # pyright: ignore[reportImplicitRelativeImport]
+import routers.aneel as aneel  # pyright: ignore[reportImplicitRelativeImport]
+import routers.anp as anp  # pyright: ignore[reportImplicitRelativeImport]
 import routers.chat as chat  # pyright: ignore[reportImplicitRelativeImport]
 import routers.contratos as contratos  # pyright: ignore[reportImplicitRelativeImport]
 import routers.diario_oficial as diario_oficial  # pyright: ignore[reportImplicitRelativeImport]
 import routers.educacao as educacao  # pyright: ignore[reportImplicitRelativeImport]
 import routers.eleicoes as eleicoes  # pyright: ignore[reportImplicitRelativeImport]
 import routers.emendas as emendas  # pyright: ignore[reportImplicitRelativeImport]
+import routers.datajud as datajud  # pyright: ignore[reportImplicitRelativeImport]
+import routers.empresas as empresas  # pyright: ignore[reportImplicitRelativeImport]
+import routers.farmacia_popular as farmacia_popular  # pyright: ignore[reportImplicitRelativeImport]
+import routers.fnde as fnde  # pyright: ignore[reportImplicitRelativeImport]
 import routers.indicadores as indicadores  # pyright: ignore[reportImplicitRelativeImport]
 import routers.licitacoes as licitacoes  # pyright: ignore[reportImplicitRelativeImport]
 import routers.meio_ambiente as meio_ambiente  # pyright: ignore[reportImplicitRelativeImport]
 import routers.municipios as municipios  # pyright: ignore[reportImplicitRelativeImport]
+import routers.noticias as noticias  # pyright: ignore[reportImplicitRelativeImport]
 import routers.orcamento as orcamento  # pyright: ignore[reportImplicitRelativeImport]
 import routers.saude as saude  # pyright: ignore[reportImplicitRelativeImport]
 import routers.seguranca as seguranca  # pyright: ignore[reportImplicitRelativeImport]
+import routers.tcu as tcu  # pyright: ignore[reportImplicitRelativeImport]
+import routers.vacinacao as vacinacao  # pyright: ignore[reportImplicitRelativeImport]
 import routers.vereadores as vereadores  # pyright: ignore[reportImplicitRelativeImport]
 
 app = FastAPI(
@@ -43,6 +53,16 @@ app.include_router(emendas.router, prefix="/emendas", tags=["emendas"])
 app.include_router(seguranca.router, prefix="/seguranca", tags=["seguranca"])
 app.include_router(meio_ambiente.router, prefix="/meio_ambiente", tags=["meio_ambiente"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
+app.include_router(vacinacao.router, prefix="/vacinacao", tags=["vacinacao"])
+app.include_router(fnde.router, prefix="/fnde", tags=["fnde"])
+app.include_router(tcu.router, prefix="/tcu", tags=["tcu"])
+app.include_router(farmacia_popular.router, prefix="/farmacia_popular", tags=["farmacia_popular"])
+app.include_router(noticias.router, prefix="/noticias", tags=["noticias"])
+app.include_router(anp.router, prefix="/anp", tags=["anp"])
+app.include_router(datajud.router, prefix="/datajud", tags=["datajud"])
+app.include_router(empresas.router, prefix="/empresas", tags=["empresas"])
+app.include_router(ana.router, prefix="/ana", tags=["ana"])
+app.include_router(aneel.router, prefix="/aneel", tags=["aneel"])
 
 @app.get("/health")
 def health():

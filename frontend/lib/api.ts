@@ -257,6 +257,212 @@ export async function getMeioAmbiente(ibge: string): Promise<MeioAmbiente> {
   return r.json();
 }
 
+// ── New module interfaces ────────────────────────────────────────────────────
+
+export interface Vacinacao {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  link_sipni?: string;
+  link_tabnet?: string;
+  link_datasus?: string;
+  coberturas?: Array<{ vacina: string; cobertura_pct: number; ano: number }>;
+}
+
+export interface FndeRepasse {
+  programa: string;
+  descricao: string;
+  valor_referencia?: number;
+  link?: string;
+}
+
+export interface Fnde {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  link_fnde?: string;
+  repasses?: FndeRepasse[];
+}
+
+export interface Tcu {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  link_portal?: string;
+  link_certidao?: string;
+  link_acordaos?: string;
+}
+
+export interface FarmaciaPopular {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  link_portal?: string;
+  link_credenciadas?: string;
+  medicamentos_gratuitos?: string[];
+  medicamentos_subsidiados?: string[];
+}
+
+export interface Noticia {
+  titulo: string;
+  link: string;
+  data?: string;
+  fonte?: string;
+  descricao?: string;
+}
+
+export interface Noticias {
+  ibge: string;
+  municipio?: string;
+  noticias: Noticia[];
+  total?: number;
+  fontes?: string[];
+}
+
+export interface AnpCombustivel {
+  produto: string;
+  unidade: string;
+}
+
+export interface Anp {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  link_painel?: string;
+  link_serie_historica?: string;
+  combustiveis?: AnpCombustivel[];
+}
+
+export interface Datajud {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  link_consulta?: string;
+  link_consulta_publica?: string;
+  link_painel_cnj?: string;
+  nota_acesso?: string;
+}
+
+export interface EmpresaResumo {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  links?: Record<string, string>;
+  uso_api?: string;
+}
+
+export interface Empresa {
+  cnpj?: string;
+  razao_social?: string;
+  nome_fantasia?: string;
+  situacao_cadastral?: string;
+  data_abertura?: string;
+  porte?: string;
+  atividade_principal?: string;
+  municipio?: string;
+  uf?: string;
+}
+
+export interface Ana {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  links?: Record<string, string>;
+  datasets_relacionados?: Array<{ titulo: string; descricao: string; link: string }>;
+  indicadores_referencia?: Array<{ indicador: string; fonte: string }>;
+}
+
+export interface Aneel {
+  ibge: string;
+  fonte: string;
+  nota?: string;
+  links?: Record<string, string>;
+  tarifas_recentes?: any[];
+  indicadores_qualidade?: Array<{ indicador: string; descricao: string }>;
+}
+
+// ── New module fetch functions ───────────────────────────────────────────────
+
+export async function getVacinacao(ibge: string): Promise<Vacinacao | null> {
+  try {
+    const r = await fetch(`${API_BASE}/vacinacao/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getFnde(ibge: string): Promise<Fnde | null> {
+  try {
+    const r = await fetch(`${API_BASE}/fnde/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getTcu(ibge: string): Promise<Tcu | null> {
+  try {
+    const r = await fetch(`${API_BASE}/tcu/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getFarmaciaPopular(ibge: string): Promise<FarmaciaPopular | null> {
+  try {
+    const r = await fetch(`${API_BASE}/farmacia_popular/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getNoticias(ibge: string): Promise<Noticias | null> {
+  try {
+    const r = await fetch(`${API_BASE}/noticias/${ibge}`, { next: { revalidate: 900 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getAnp(ibge: string): Promise<Anp | null> {
+  try {
+    const r = await fetch(`${API_BASE}/anp/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getDatajud(ibge: string): Promise<Datajud | null> {
+  try {
+    const r = await fetch(`${API_BASE}/datajud/${ibge}`, { next: { revalidate: 86400 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getEmpresasResumo(ibge: string): Promise<EmpresaResumo | null> {
+  try {
+    const r = await fetch(`${API_BASE}/empresas/${ibge}/resumo`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getAna(ibge: string): Promise<Ana | null> {
+  try {
+    const r = await fetch(`${API_BASE}/ana/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+export async function getAneel(ibge: string): Promise<Aneel | null> {
+  try {
+    const r = await fetch(`${API_BASE}/aneel/${ibge}`, { next: { revalidate: 3600 } });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
 export function formatNum(n: number | null, decimals = 0): string {
   if (n === null || n === undefined) return '—';
   return n.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
