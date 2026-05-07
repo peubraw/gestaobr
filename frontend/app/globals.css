@@ -12,6 +12,18 @@
   .card {
     @apply bg-white rounded border border-gov-border shadow-sm p-5;
   }
+  
+  .mc-card {
+    @apply bg-white border-2 border-gov-border p-4 flex flex-col shadow-sm;
+  }
+  
+  .mc-header {
+    @apply bg-gov-dark text-white uppercase tracking-wider text-xs font-bold px-3 py-2 flex items-center gap-2 mb-4;
+  }
+
+  .mc-value {
+    @apply font-mono font-bold text-gov-dark;
+  }
 
   .section-title {
     @apply text-lg font-bold text-gov-dark border-l-4 border-gov-blue pl-3 mb-4;
@@ -44,4 +56,19 @@
   .data-table tr:hover td {
     @apply bg-blue-50;
   }
+}
+
+/* Scrollbar estilo Dashboard */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+  background: #1351B4; 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #071D41; 
 }
