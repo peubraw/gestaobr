@@ -14,7 +14,13 @@ router = APIRouter()
 BACKEND_INTERNAL_URL = os.getenv("BACKEND_INTERNAL_URL", "http://localhost:8000").rstrip("/")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+DEFAULT_MODEL = "nvidia/nemotron-nano-9b-v2:free"
+FALLBACK_MODELS = [
+    "nvidia/nemotron-nano-9b-v2:free",
+    "nvidia/nemotron-nano-12b-v2-vl:free",
+    "meta-llama/llama-3.2-3b-instruct:free",
+    "openai/gpt-oss-20b:free",
+]
 
 
 class ChatHistoricoItem(BaseModel):
@@ -188,32 +194,36 @@ async def chat_municipio(ibge: str, body: ChatRequest):
         messages.extend(item.model_dump() for item in historico)
         messages.append({"role": "user", "content": body.pergunta})
 
-        try:
-            response = await client.post(
-                OPENROUTER_URL,
-                headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "HTTP-Referer": "https://gestaobr.com.br",
-                    "X-Title": "GestãoBR".encode("ascii", "replace").decode("ascii"),
-                },
-                json={
-                    "model": DEFAULT_MODEL,
-                    "messages": messages,
-                    "temperature": 0.2,
-                    "stream": False,
-                },
-            )
-        except httpx.HTTPError:
+        response = None
+        modelo_usado = DEFAULT_MODEL
+        for modelo in FALLBACK_MODELS:
+            try:
+                resp = await client.post(
+                    OPENROUTER_URL,
+                    headers={
+                        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                        "HTTP-Referer": "https://gestaobr.com.br",
+                        "X-Title": "GestãoBR".encode("ascii", "replace").decode("ascii"),
+                    },
+                    json={
+                        "model": modelo,
+                        "messages": messages,
+                        "temperature": 0.2,
+                        "stream": False,
+                    },
+                )
+                if resp.status_code == 200:
+                    response = resp
+                    modelo_usado = modelo
+                    break
+            except httpx.HTTPError:
+                continue
+
+        if response is None:
             raise HTTPException(
                 status_code=503,
                 detail="Serviço de IA indisponível no momento.",
             )
-
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=503,
-            detail="Serviço de IA indisponível no momento. OpenRouter não respondeu com sucesso.",
-        )
 
     payload = _as_dict(response.json())
     resposta = _extrair_conteudo_llm(payload)
@@ -235,6 +245,6 @@ async def chat_municipio(ibge: str, body: ChatRequest):
 
     return {
         "resposta": resposta,
-        "modelo": payload.get("model") or DEFAULT_MODEL,
+        "modelo": payload.get("model") or modelo_usado,
         "tokens_usados": tokens_usados,
     }
