@@ -39,8 +39,18 @@ async def eleicoes_municipio(ibge: str):
             )
 
         municipio = municipio_response.json()
-        diario_payload = diario_response.json() if diario_response.status_code == 200 else {}
-        total_diarios = diario_payload.get("count") or diario_payload.get("total") or 0
+
+        # Querido Diário may return HTML - handle gracefully
+        diario_disponivel = False
+        if diario_response.status_code == 200:
+            ct = diario_response.headers.get("content-type", "")
+            if "application/json" in ct:
+                try:
+                    diario_payload = diario_response.json()
+                    total_diarios = diario_payload.get("count") or 0
+                    diario_disponivel = bool(total_diarios)
+                except Exception:
+                    pass
 
         return {
             "disponivel": True,
@@ -50,7 +60,7 @@ async def eleicoes_municipio(ibge: str):
             "eleicao_ano": 2024,
             "fonte": "TSE",
             "aviso": "Dados detalhados disponíveis no portal oficial do TSE.",
-            "diario_oficial_disponivel": bool(total_diarios),
+            "diario_oficial_disponivel": diario_disponivel,
             "fonte_auxiliar": "IBGE / Querido Diário",
         }
     except Exception as e:
