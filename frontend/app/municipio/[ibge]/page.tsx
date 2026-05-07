@@ -65,8 +65,9 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
   let saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente;
   let vacinacao, fnde, tcu, farmacia, noticias, anp, datajud, empresas, ana, aneel;
   try {
-    [municipio, indicadores, orcamento, camara, contratos, saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente, vacinacao, fnde, tcu, farmacia, noticias, anp, datajud, empresas, ana, aneel] = await Promise.all([
-      getMunicipio(ibge),
+    // Fetch municipio first so nome/uf are available for noticias query
+    municipio = await getMunicipio(ibge);
+    [indicadores, orcamento, camara, contratos, saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente, vacinacao, fnde, tcu, farmacia, noticias, anp, datajud, empresas, ana, aneel] = await Promise.all([
       getIndicadores(ibge),
       getOrcamento(ibge),
       getCamara(ibge),
@@ -83,7 +84,7 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
       getFnde(ibge),
       getTcu(ibge),
       getFarmaciaPopular(ibge),
-      getNoticias(ibge),
+      getNoticias(ibge, municipio.nome, municipio.uf),
       getAnp(ibge),
       getDatajud(ibge),
       getEmpresasResumo(ibge),
@@ -610,22 +611,17 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
           </section>
 
           {/* Despesas por Função */}
-          <section id="contratos" className="mc-card flex-1">
+          <section id="contratos" className="mc-card">
             <SectionHeader icon={Building2} title={`Despesas por Função ${contratos.ano ? `(${contratos.ano})` : ''}`} />
             {contratos.disponivel && contratos.dados && Array.isArray(contratos.dados) && contratos.dados.length > 0 ? (
               <div className="flex flex-col gap-2">
                 <div className="text-[10px] font-mono text-gray-500 mb-1">EXECUÇÃO ORÇAMENTÁRIA — SICONFI / RREO ANEXO 02</div>
-                {contratos.dados.slice(0, 6).map((c: any, i: number) => (
-                  <div key={i} className="flex flex-col p-2 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-xs font-mono font-bold text-gov-dark truncate max-w-[55%]">{c.objeto || c.numero || 'S/N'}</span>
-                      <span className="text-[10px] font-mono text-gov-green font-bold">
-                        {c.valorInicialCompra ? `R$ ${Number(c.valorInicialCompra).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : '—'}
-                      </span>
-                    </div>
-                    <div className="text-[10px] font-mono text-gray-500">
-                      Função {c.numero} — {c.ano}
-                    </div>
+                {contratos.dados.slice(0, 8).map((c: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center p-2 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
+                    <span className="text-xs font-mono font-bold text-gov-dark truncate max-w-[55%]">{c.objeto || c.numero || 'S/N'}</span>
+                    <span className="text-[10px] font-mono text-gov-green font-bold whitespace-nowrap">
+                      {c.valorInicialCompra ? `R$ ${Number(c.valorInicialCompra).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : '—'}
+                    </span>
                   </div>
                 ))}
                 {contratos.despesa_total && (
@@ -636,12 +632,12 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                     </span>
                   </div>
                 )}
-                <a href={`https://www.portaltransparencia.gov.br/municipios/${ibge}`} target="_blank" rel="noreferrer" className="mt-2 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
+                <a href={`https://www.portaltransparencia.gov.br/municipios/${ibge}`} target="_blank" rel="noreferrer" className="mt-1 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
                   VER DETALHES NO PORTAL DA TRANSPARÊNCIA →
                 </a>
               </div>
             ) : (
-              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600 mt-auto mb-auto">
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
                 <AlertCircle size={20} className="text-gray-400" />
                 <span>DADOS DE DESPESAS NÃO DISPONÍVEIS.</span>
               </div>

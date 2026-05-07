@@ -415,9 +415,13 @@ export async function getFarmaciaPopular(ibge: string): Promise<FarmaciaPopular 
   } catch { return null; }
 }
 
-export async function getNoticias(ibge: string): Promise<Noticias | null> {
+export async function getNoticias(ibge: string, nomeMunicipio?: string, uf?: string): Promise<Noticias | null> {
   try {
-    const r = await fetch(`${API_BASE}/noticias/${ibge}`, { next: { revalidate: 900 } });
+    const params = new URLSearchParams();
+    if (nomeMunicipio) params.set('nome_municipio', nomeMunicipio);
+    if (uf) params.set('uf', uf);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const r = await fetch(`${API_BASE}/noticias/${ibge}${qs}`, { next: { revalidate: 900 } });
     if (!r.ok) return null;
     return r.json();
   } catch { return null; }

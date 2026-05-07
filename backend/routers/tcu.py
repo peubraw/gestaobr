@@ -60,20 +60,25 @@ async def tcu_municipio(ibge: str, nome_municipio: str = ""):
 
         return {
             "disponivel": True,
-            "codigo_ibge": ibge,
+            "ibge": ibge,
             "acordaos_recentes": acordaos,
             "total_acordaos": len(acordaos),
-            "link_jurisprudencia": link_tcu_juris,
-            "link_certidao_regularidade": link_certidao,
-            "link_portal_municipios": link_portal,
+            # chaves alinhadas com o frontend
+            "link_certidao": link_certidao,
+            "link_acordaos": link_tcu_juris,
+            "link_portal": link_portal,
+            "nota": "Consulte a certidão de regularidade e acórdãos do TCU relativos ao município.",
             "fonte": "TCU / Tribunal de Contas da União",
-            "aviso": "Consulte a certidão de regularidade e acórdãos do TCU relativos ao município." if not acordaos else None,
         }
 
     except Exception as e:
         return {
             "disponivel": False,
+            "ibge": ibge,
             "erro": str(e),
-            "link_certidao_regularidade": "https://certidoes-apf.apps.tcu.gov.br/",
+            "link_certidao": "https://certidoes-apf.apps.tcu.gov.br/",
+            "link_acordaos": "https://contas.tcu.gov.br/juris/Web/Juris/ConsultarTexto/ConsultarTexto.faces",
+            "link_portal": "https://portal.tcu.gov.br/municipios/",
+            "nota": "Consulte a certidão de regularidade e acórdãos do TCU relativos ao município.",
             "fonte": "TCU / Tribunal de Contas da União",
         }

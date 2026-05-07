@@ -24,6 +24,21 @@ MEDICAMENTOS_GRATUITOS = [
     "Anticoncepcional oral",
 ]
 
+MEDICAMENTOS_SUBSIDIADOS = [
+    "Insulina NPH (diabetes)",
+    "Insulina Regular (diabetes)",
+    "Losartana (hipertensão)",
+    "Anlodipino (hipertensão)",
+    "Omeprazol (gastrite)",
+    "Amoxicilina (infecções)",
+    "Rosuvastatina (colesterol)",
+    "Furosemida (insuficiência cardíaca)",
+    "AAS 100mg (prevenção cardiovascular)",
+    "Fluoxetina (depressão)",
+    "Clonazepam (ansiedade)",
+    "Amitriptilina (depressão)",
+]
+
 
 def _validar_ibge(ibge: str) -> None:
     if not (ibge.isdigit() and len(ibge) == 7):
@@ -69,11 +84,12 @@ async def farmacia_popular_municipio(ibge: str):
 
         return {
             "disponivel": True,
-            "codigo_ibge": ibge,
+            "ibge": ibge,
             "farmacias_credenciadas": farmacias,
             "total_farmacias": len(farmacias),
             "medicamentos_gratuitos": MEDICAMENTOS_GRATUITOS,
-            "link_busca_farmacias": link_busca,
+            "medicamentos_subsidiados": MEDICAMENTOS_SUBSIDIADOS,
+            "link_portal": link_busca,
             "link_medicamentos": link_remedios,
             "fonte": "Farmácia Popular / Ministério da Saúde",
             "aviso": f"{'Farmácias encontradas.' if farmacias else 'Consulte o portal para localizar farmácias credenciadas no município.'}",
@@ -82,8 +98,10 @@ async def farmacia_popular_municipio(ibge: str):
     except Exception as e:
         return {
             "disponivel": False,
+            "ibge": ibge,
             "erro": str(e),
             "medicamentos_gratuitos": MEDICAMENTOS_GRATUITOS,
-            "link_busca_farmacias": "https://www.gov.br/farmaciaecuidados/pt-br/farmacias-populares/lista-de-farmacias",
+            "medicamentos_subsidiados": MEDICAMENTOS_SUBSIDIADOS,
+            "link_portal": "https://www.gov.br/farmaciaecuidados/pt-br/farmacias-populares/lista-de-farmacias",
             "fonte": "Farmácia Popular / Ministério da Saúde",
         }

@@ -1,7 +1,7 @@
 """
 Notícias relevantes para o município via RSS das principais agências brasileiras.
 Fontes: Agência Brasil (EBC), Câmara, Senado, G1 Política.
-Filtra por nome do município e UF.
+Filtra por nome do município e UF. Quando sem filtro específico, retorna headlines gerais.
 """
 import asyncio
 import httpx
@@ -31,6 +31,13 @@ RSS_FEEDS = [
         "url": "https://www.gov.br/pt-br/noticias/feed",
         "tipo": "governo",
     },
+]
+
+# Termos gerais de gestão pública (fallback quando município não aparece nas agências)
+KEYWORDS_GESTAO = [
+    "prefeitura", "município", "municipal", "gestão pública",
+    "investimento", "obras", "licitação", "saúde pública",
+    "educação pública", "saneamento", "orçamento", "governo",
 ]
 
 
@@ -110,33 +117,39 @@ async def noticias_municipio(ibge: str, nome_municipio: str = "", uf: str = ""):
     try:
         _validar_ibge(ibge)
 
-        palavras_chave = []
+        # Monta palavras-chave: tenta com o nome do município + UF
+        palavras_municipio = []
         if nome_municipio:
-            palavras_chave.append(nome_municipio)
-            # Adiciona versão simplificada (sem acentos aproximado)
-            palavras_chave.append(nome_municipio.split("/")[0].strip())
+            palavras_municipio.append(nome_municipio.lower())
+            # versão sem a parte após "/" (ex: "São Gonçalo/RJ" → "São Gonçalo")
+            palavras_municipio.append(nome_municipio.split("/")[0].strip().lower())
         if uf:
-            palavras_chave.append(uf)
-        if not palavras_chave:
-            # Sem filtro, retorna headlines gerais de gestão pública
-            palavras_chave = ["município", "prefeitura", "gestão municipal", "governo local"]
+            palavras_municipio.append(uf.lower())
 
         async with httpx.AsyncClient(timeout=12) as client:
             resultados = await asyncio.gather(
-                *[_fetch_feed(client, feed, palavras_chave) for feed in RSS_FEEDS],
+                *[_fetch_feed(client, feed, palavras_municipio if palavras_municipio else KEYWORDS_GESTAO) for feed in RSS_FEEDS],
                 return_exceptions=True,
             )
 
-        todas_noticias = []
+        todas_noticias: list[dict] = []
         for r in resultados:
             if isinstance(r, list):
                 todas_noticias.extend(r)
 
-        # Limita a 10 mais recentes
-        todas_noticias = todas_noticias[:10]
+        # Se não encontrou noticias específicas do município, usa headlines gerais
+        if not todas_noticias:
+            async with httpx.AsyncClient(timeout=12) as client:
+                resultados_gerais = await asyncio.gather(
+                    *[_fetch_feed(client, feed, KEYWORDS_GESTAO) for feed in RSS_FEEDS[:2]],
+                    return_exceptions=True,
+                )
+            for r in resultados_gerais:
+                if isinstance(r, list):
+                    todas_noticias.extend(r)
 
-        # Se sem filtro específico, pega headlines gerais
-        if not todas_noticias and not nome_municipio:
+        # Se ainda vazio, pega as 5 primeiras headlines brutas da Agência Brasil
+        if not todas_noticias:
             async with httpx.AsyncClient(timeout=12) as client:
                 try:
                     resp = await client.get(RSS_FEEDS[0]["url"], follow_redirects=True)
@@ -156,9 +169,12 @@ async def noticias_municipio(ibge: str, nome_municipio: str = "", uf: str = ""):
                 except Exception:
                     pass
 
+        todas_noticias = todas_noticias[:10]
+
         return {
             "disponivel": True,
-            "codigo_ibge": ibge,
+            "ibge": ibge,
+            "municipio": nome_municipio,
             "noticias": todas_noticias,
             "total": len(todas_noticias),
             "fontes_monitoradas": [f["nome"] for f in RSS_FEEDS],
@@ -168,6 +184,7 @@ async def noticias_municipio(ibge: str, nome_municipio: str = "", uf: str = ""):
     except Exception as e:
         return {
             "disponivel": False,
+            "ibge": ibge,
             "erro": str(e),
             "noticias": [],
             "fonte": "RSS — Agência Brasil / EBC",

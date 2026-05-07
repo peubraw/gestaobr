@@ -72,24 +72,43 @@ async def fnde_municipio(ibge: str, ano: int = 2024):
         # Fallback: link direto para consulta no portal FNDE
         link_fnde = f"https://www.fnde.gov.br/fndesite/index.php/consultas/repasses/historico-de-repasses?codigoMunicipio={ibge6}&ano={ano}"
 
+        # Monta repasses com links individuais para o frontend
+        repasses_com_links = []
+        for prog in PROGRAMAS:
+            repasses_com_links.append({
+                "programa": prog["nome"],
+                "descricao": prog["descricao"],
+                "link": f"https://www.fnde.gov.br/fndesite/index.php/consultas/repasses/historico-de-repasses?codigoMunicipio={ibge6}&ano={ano}",
+            })
+        # Se conseguiu dados reais, adiciona valores
+        for rep in repasses:
+            for rpl in repasses_com_links:
+                if rpl["programa"].lower() in (rep.get("programa") or "").lower():
+                    rpl["valor_referencia"] = rep.get("valor")
+                    break
+
         return {
             "disponivel": True,
-            "codigo_ibge": ibge,
+            "ibge": ibge,
             "ano": ano,
-            "repasses": repasses,
+            "repasses": repasses_com_links,
             "valor_total_ano": valor_total,
             "total_transferencias": len(repasses),
-            "programas_monitorados": PROGRAMAS,
             "link_fnde": link_fnde,
             "fonte": "FNDE / Ministério da Educação",
-            "aviso": "Repasses constitucionais do FNDE para educação municipal." if not repasses else None,
         }
 
     except Exception as e:
+        ibge6 = ibge[:6] if len(ibge) >= 6 else ibge
+        repasses_fallback = [
+            {"programa": p["nome"], "descricao": p["descricao"], "link": f"https://www.fnde.gov.br/fndesite/index.php/consultas/repasses/historico-de-repasses?codigoMunicipio={ibge6}&ano={ano}"}
+            for p in PROGRAMAS
+        ]
         return {
             "disponivel": False,
+            "ibge": ibge,
             "erro": str(e),
+            "repasses": repasses_fallback,
             "link_fnde": f"https://www.fnde.gov.br/fndesite/index.php/consultas/repasses/historico-de-repasses",
-            "programas_monitorados": PROGRAMAS,
             "fonte": "FNDE / Ministério da Educação",
         }
