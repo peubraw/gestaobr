@@ -42,33 +42,31 @@ async def emendas_municipio(ibge: str):
     try:
         _validar_ibge(ibge)
 
-        params = {
-            "an_exercicio": 2023,
-            "in_periodicidade": "B",
-            "nr_periodo": 6,
-            "co_tipo_demonstrativo": "RREO",
-            "no_anexo": "RREO-Anexo 01",
-            "co_esfera": "M",
-            "co_poder": "E",
-            "id_ente": ibge,
-        }
-
         async with httpx.AsyncClient(timeout=25) as client:
-            response = await client.get(
-                SICONFI_URL,
-                params=params,
-                headers={"Accept": "application/json"},
-            )
-
-        if response.status_code != 200:
-            return {
-                "disponivel": False,
-                "erro": f"Falha ao consultar SICONFI ({response.status_code})",
-                "fonte": "SICONFI — Tesouro Nacional",
-            }
-
-        payload = response.json()
-        items = payload.get("items", [])
+            items = None
+            ano_encontrado = 2024
+            for ano_tentativa in (2024, 2023, 2022):
+                params = {
+                    "an_exercicio": ano_tentativa,
+                    "in_periodicidade": "B",
+                    "nr_periodo": 6,
+                    "co_tipo_demonstrativo": "RREO",
+                    "no_anexo": "RREO-Anexo 01",
+                    "co_esfera": "M",
+                    "co_poder": "E",
+                    "id_ente": ibge,
+                }
+                response = await client.get(
+                    SICONFI_URL,
+                    params=params,
+                    headers={"Accept": "application/json"},
+                )
+                if response.status_code == 200:
+                    candidate = response.json().get("items", [])
+                    if candidate:
+                        items = candidate
+                        ano_encontrado = ano_tentativa
+                        break
 
         if not items:
             return {
@@ -81,7 +79,7 @@ async def emendas_municipio(ibge: str):
         populacao = meta.get("populacao")
         municipio = meta.get("instituicao", "")
         uf = meta.get("uf", "")
-        exercicio = meta.get("exercicio", 2023)
+        exercicio = meta.get("exercicio") or ano_encontrado
 
         # Filter: realized revenues
         realizadas = [i for i in items if i.get("coluna") == COLUNA_REALIZADA]

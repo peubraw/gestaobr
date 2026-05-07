@@ -278,39 +278,39 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
           {/* Licitações */}
           <section id="licitacoes" className="mc-card">
-            <SectionHeader icon={ShoppingBag} title="Licitações Recentes" />
+            <SectionHeader icon={ShoppingBag} title={`Execução Orçamentária ${licitacoes.ano ? `(${licitacoes.ano})` : ''}`} />
             {licitacoes.disponivel && licitacoes.licitacoes && licitacoes.licitacoes.length > 0 ? (
               <div className="flex flex-col gap-2">
+                <div className="text-[10px] font-mono text-gray-500 mb-1">DESPESAS POR FUNÇÃO — SICONFI / RREO ANEXO 02</div>
                 {licitacoes.licitacoes.map((lic: Licitacao, i: number) => (
                   <div key={i} className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-xs font-mono font-bold text-gov-dark truncate max-w-[60%]">
-                        {lic.numero_controle || lic.numero || 'S/N'}
+                        {lic.objeto || lic.titulo || '—'}
                       </span>
                       <span className="text-[10px] font-mono text-gray-500 font-bold">
-                        {lic.ano || lic.data_publicacao?.slice(0, 4) || '—'}
+                        {lic.ano || '—'}
                       </span>
-                    </div>
-                    <div className="text-[10px] text-gray-500 line-clamp-2 italic mb-2">
-                      {lic.titulo || lic.objeto || '—'}
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-[9px] font-mono font-bold uppercase text-gov-dark truncate max-w-[70%]">
-                        {lic.orgao || '—'}
-                      </div>
-                      {lic.url && (
-                        <a href={lic.url} target="_blank" rel="noreferrer" className="text-[9px] font-mono text-gov-blue hover:underline uppercase">
-                          VER →
-                        </a>
-                      )}
                     </div>
                   </div>
                 ))}
+                {(licitacoes as any).link_pncp && (
+                  <a href={(licitacoes as any).link_pncp} target="_blank" rel="noreferrer" className="mt-2 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
+                    CONSULTAR LICITAÇÕES NO PNCP →
+                  </a>
+                )}
               </div>
             ) : (
-              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
-                <AlertCircle size={20} className="text-gray-400" />
-                <span>NENHUMA LICITAÇÃO RECENTE ENCONTRADA.</span>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                  <AlertCircle size={20} className="text-gray-400" />
+                  <span>DADOS NÃO DISPONÍVEIS.</span>
+                </div>
+                {(licitacoes as any).link_pncp && (
+                  <a href={(licitacoes as any).link_pncp} target="_blank" rel="noreferrer" className="text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2 border border-blue-200">
+                    CONSULTAR LICITAÇÕES NO PNCP →
+                  </a>
+                )}
               </div>
             )}
           </section>
@@ -387,36 +387,41 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             )}
           </section>
 
-          {/* Contratos Federais */}
+          {/* Despesas por Função */}
           <section id="contratos" className="mc-card flex-1">
-            <SectionHeader icon={Building2} title="Contratos da União" />
+            <SectionHeader icon={Building2} title={`Despesas por Função ${contratos.ano ? `(${contratos.ano})` : ''}`} />
             {contratos.disponivel && contratos.dados && Array.isArray(contratos.dados) && contratos.dados.length > 0 ? (
               <div className="flex flex-col gap-2">
-                <div className="text-[10px] font-mono text-gray-500 mb-1">REGISTROS RECENTES (PORTAL DA TRANSPARÊNCIA)</div>
+                <div className="text-[10px] font-mono text-gray-500 mb-1">EXECUÇÃO ORÇAMENTÁRIA — SICONFI / RREO ANEXO 02</div>
                 {contratos.dados.slice(0, 6).map((c: any, i: number) => (
                   <div key={i} className="flex flex-col p-2 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
                     <div className="flex justify-between items-start mb-1">
-                      <span className="text-xs font-mono font-bold text-gov-dark">{c.numero || 'S/N'}</span>
+                      <span className="text-xs font-mono font-bold text-gov-dark truncate max-w-[55%]">{c.objeto || c.numero || 'S/N'}</span>
                       <span className="text-[10px] font-mono text-gov-green font-bold">
-                        R$ {c.valorInicialCompra ? Number(c.valorInicialCompra).toLocaleString('pt-BR') : '—'}
+                        {c.valorInicialCompra ? `R$ ${Number(c.valorInicialCompra).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : '—'}
                       </span>
                     </div>
-                    <div className="text-[10px] font-mono text-gray-600 truncate uppercase">
-                      {c.fornecedor?.nome || c.nomeFornecedor || 'FORNECEDOR NÃO IDENTIFICADO'}
-                    </div>
-                    <div className="text-[10px] text-gray-500 line-clamp-1 italic">
-                      {c.objeto || c.objetoContrato || '—'}
+                    <div className="text-[10px] font-mono text-gray-500">
+                      Função {c.numero} — {c.ano}
                     </div>
                   </div>
                 ))}
+                {contratos.despesa_total && (
+                  <div className="mt-2 p-2 bg-gov-blue/5 border border-gov-blue/20 flex justify-between items-center">
+                    <span className="text-[10px] font-mono font-bold text-gov-blue uppercase">DESPESA TOTAL REALIZADA</span>
+                    <span className="text-sm font-mono font-black text-gov-blue">
+                      R$ {Number(contratos.despesa_total).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                )}
                 <a href={`https://www.portaltransparencia.gov.br/municipios/${ibge}`} target="_blank" rel="noreferrer" className="mt-2 text-center text-[10px] font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 py-2">
-                  VER TODOS NO PORTAL DA TRANSPARÊNCIA →
+                  VER DETALHES NO PORTAL DA TRANSPARÊNCIA →
                 </a>
               </div>
             ) : (
               <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600 mt-auto mb-auto">
                 <AlertCircle size={20} className="text-gray-400" />
-                <span>NENHUM REGISTRO DE CONTRATO FEDERAL LOCALIZADO.</span>
+                <span>DADOS DE DESPESAS NÃO DISPONÍVEIS.</span>
               </div>
             )}
           </section>
