@@ -1,12 +1,12 @@
 """
-Licitações municipais via PNCP.
+Licitações municipais via PNCP (search endpoint).
 """
 import httpx
 from fastapi import APIRouter
 
 router = APIRouter()
 
-PNCP_URL = "https://pncp.gov.br/api/pncp/v1/contratacoes/publicacao"
+PNCP_SEARCH_URL = "https://pncp.gov.br/api/search/"
 
 
 def _validar_ibge(ibge: str) -> None:
@@ -14,15 +14,16 @@ def _validar_ibge(ibge: str) -> None:
         raise ValueError("Código IBGE deve ter 7 dígitos")
 
 
-def _to_list(payload):
-    if isinstance(payload, list):
-        return payload
-    if isinstance(payload, dict):
-        for chave in ("data", "items", "content", "resultado", "resultados"):
-            valor = payload.get(chave)
-            if isinstance(valor, list):
-                return valor
-    return []
+def _parse_item(item: dict) -> dict:
+    return {
+        "numero_controle": item.get("numero_controle_pncp") or item.get("id"),
+        "titulo": item.get("title") or item.get("titulo"),
+        "objeto": item.get("description") or item.get("objeto"),
+        "orgao": item.get("orgao_nome") or item.get("orgao"),
+        "ano": item.get("ano"),
+        "data_publicacao": item.get("createdAt") or item.get("data_publicacao"),
+        "url": item.get("item_url"),
+    }
 
 
 @router.get("/{ibge}")
@@ -32,8 +33,14 @@ async def licitacoes_municipio(ibge: str):
 
         async with httpx.AsyncClient(timeout=20) as client:
             response = await client.get(
-                PNCP_URL,
-                params={"codigoMunicipio": ibge, "pagina": 1, "tamanhoPagina": 10},
+                PNCP_SEARCH_URL,
+                params={
+                    "status": "publicado",
+                    "tipos_documento": "edital",
+                    "municipio_ibge": ibge,
+                    "pagina": 1,
+                    "tam_pagina": 10,
+                },
                 headers={"Accept": "application/json"},
             )
 
@@ -41,28 +48,14 @@ async def licitacoes_municipio(ibge: str):
             return {
                 "disponivel": False,
                 "erro": f"Falha ao consultar PNCP ({response.status_code})",
-                "fonte": "PNCP",
+                "fonte": "Portal Nacional de Contratações Públicas (PNCP)",
             }
 
         payload = response.json()
-        itens = _to_list(payload)
-        licitacoes = []
-        for item in itens[:10]:
-            licitacoes.append(
-                {
-                    "numero": item.get("numeroControlePNCP") or item.get("numeroCompra") or item.get("sequencialCompra"),
-                    "objeto": item.get("objetoCompra") or item.get("objeto") or item.get("descricao"),
-                    "valor_total": item.get("valorTotalEstimado") or item.get("valorTotalHomologado") or item.get("valorTotal"),
-                    "situacao": item.get("situacaoCompraNome") or item.get("situacaoCompra") or item.get("status"),
-                    "data_publicacao": item.get("dataPublicacaoPncp") or item.get("dataPublicacao") or item.get("dataInclusao"),
-                }
-            )
+        itens = payload.get("items", []) if isinstance(payload, dict) else []
+        total = payload.get("total", len(itens)) if isinstance(payload, dict) else len(itens)
 
-        total = payload.get("totalRegistros") if isinstance(payload, dict) else None
-        if total is None:
-            total = payload.get("total") if isinstance(payload, dict) else None
-        if total is None:
-            total = len(itens)
+        licitacoes = [_parse_item(item) for item in itens[:10]]
 
         return {
             "disponivel": True,
@@ -72,4 +65,4 @@ async def licitacoes_municipio(ibge: str):
             "fonte": "Portal Nacional de Contratações Públicas (PNCP)",
         }
     except Exception as e:
-        return {"disponivel": False, "erro": str(e), "fonte": "PNCP"}
+        return {"disponivel": False, "erro": str(e), "fonte": "Portal Nacional de Contratações Públicas (PNCP)"}
