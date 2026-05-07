@@ -216,7 +216,7 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                       </tr>
                     </thead>
                     <tbody>
-                      {orcamento.resumo.slice(0, 8).map((row: any, i: number) => (
+                      {(orcamento.resumo ?? []).slice(0, 8).map((row: any, i: number) => (
                         <tr key={i} className="hover:bg-blue-50">
                           <td className="p-2 border border-gray-200 truncate max-w-[200px]">{row.no_conta || row.ds_conta || '—'}</td>
                           <td className="p-2 border border-gray-200 text-right">{row.vl_orcado_atualizado ? Number(row.vl_orcado_atualizado).toLocaleString('pt-BR') : '—'}</td>
