@@ -7,6 +7,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 PNCP_SEARCH_URL = "https://pncp.gov.br/api/search/"
+PNCP_BASE = "https://pncp.gov.br"
 
 
 def _validar_ibge(ibge: str) -> None:
@@ -22,7 +23,7 @@ def _parse_item(item: dict) -> dict:
         "orgao": item.get("orgao_nome") or item.get("orgao"),
         "ano": item.get("ano"),
         "data_publicacao": item.get("createdAt") or item.get("data_publicacao"),
-        "url": item.get("item_url"),
+        "url": f"{PNCP_BASE}{item['item_url']}" if item.get("item_url") else None,
     }
 
 

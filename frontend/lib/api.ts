@@ -33,6 +33,8 @@ export interface Orcamento {
   ano: number;
   disponivel: boolean;
   resumo?: any[];
+  receita_total?: number;
+  municipio?: string;
   fonte?: string;
 }
 
@@ -107,14 +109,19 @@ export interface Seguranca {
 }
 
 export interface DiarioEdicao {
-  data: string;
-  link: string;
+  data?: string;
+  date?: string;
+  link?: string;
+  url?: string;
+  edition_number?: string;
 }
 
 export interface Diario {
   disponivel: boolean;
   total_edicoes?: number;
   edicoes_recentes?: DiarioEdicao[];
+  link_portal?: string;
+  erro?: string;
 }
 
 export interface Emenda {
@@ -127,6 +134,9 @@ export interface Emendas {
   disponivel: boolean;
   total_emendas?: number;
   valor_total?: number;
+  receita_total_realizada?: number;
+  receita_per_capita?: number;
+  exercicio?: number;
   emendas?: Emenda[];
 }
 
@@ -164,7 +174,7 @@ export async function getIndicadores(ibge: string): Promise<Indicadores> {
   return r.json();
 }
 
-export async function getOrcamento(ibge: string, ano = 2023): Promise<Orcamento> {
+export async function getOrcamento(ibge: string, ano = 2024): Promise<Orcamento> {
   const r = await fetch(`${API_BASE}/orcamento/${ibge}?ano=${ano}`, { next: { revalidate: 3600 } });
   if (!r.ok) return { codigo_ibge: ibge, ano, disponivel: false };
   return r.json();

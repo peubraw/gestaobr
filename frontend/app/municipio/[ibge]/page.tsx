@@ -85,7 +85,8 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
   // Helper values
   const hasOrçamento = orcamento.disponivel && orcamento.resumo && orcamento.resumo.length > 0;
-  const totalReceita = hasOrçamento ? (orcamento.resumo ?? []).find((r: any) => r.no_conta?.toLowerCase().includes('receitas') || r.no_conta?.toLowerCase().includes('total'))?.vl_realizado : null;
+  const totalReceita = orcamento.receita_total ?? 
+    (hasOrçamento ? (orcamento.resumo ?? []).find((r: any) => r.cod_conta === 'ReceitasExcetoIntraOrcamentarias' || r.no_conta?.toLowerCase().includes('receitas'))?.vl_realizado : null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -314,30 +315,28 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             )}
           </section>
 
-          {/* Emendas */}
+          {/* Receitas / Emendas */}
           <section id="emendas" className="mc-card">
-            <SectionHeader icon={Banknote} title="Emendas Parlamentares" />
+            <SectionHeader icon={Banknote} title={`Receitas Municipais ${emendas.exercicio ? `(${emendas.exercicio})` : ''}`} />
             {emendas.disponivel ? (
               <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <KpiCard title="Total de Emendas" value={emendas.total_emendas?.toString() || '—'} icon={FileText} />
-                  <KpiCard title="Valor Total" value={emendas.valor_total ? formatNum(emendas.valor_total, 0) : '—'} unit="R$" icon={Wallet} />
+                  <KpiCard title="Receita Total Realizada" value={emendas.receita_total_realizada ? formatNum(emendas.receita_total_realizada, 0) : '—'} unit="R$" icon={Wallet} />
+                  <KpiCard title="Receita Per Capita" value={emendas.receita_per_capita ? formatNum(emendas.receita_per_capita, 0) : '—'} unit="R$/hab" icon={Users} />
                 </div>
                 {emendas.emendas && emendas.emendas.length > 0 && (
                   <div className="overflow-x-auto mt-2">
                     <table className="w-full text-left border-collapse font-mono text-xs">
                       <thead>
                         <tr className="bg-gray-200 text-gov-dark">
-                          <th className="p-2 border border-gray-300">AUTOR</th>
-                          <th className="p-2 border border-gray-300">AÇÃO</th>
-                          <th className="p-2 border border-gray-300 text-right">VALOR (R$)</th>
+                          <th className="p-2 border border-gray-300">CATEGORIA</th>
+                          <th className="p-2 border border-gray-300 text-right">VALOR REALIZADO (R$)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {emendas.emendas.map((em: Emenda, i: number) => (
                           <tr key={i} className="hover:bg-blue-50">
-                            <td className="p-2 border border-gray-200 truncate max-w-[120px] font-bold">{em.autor || '—'}</td>
-                            <td className="p-2 border border-gray-200 truncate max-w-[150px]">{em.acao || '—'}</td>
+                            <td className="p-2 border border-gray-200 truncate max-w-[200px]">{em.acao || em.autor || '—'}</td>
                             <td className="p-2 border border-gray-200 text-right font-bold text-gov-dark">{em.valor ? Number(em.valor).toLocaleString('pt-BR') : '—'}</td>
                           </tr>
                         ))}
@@ -345,6 +344,9 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                     </table>
                   </div>
                 )}
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">
+                  FONTE: SICONFI — TESOURO NACIONAL (RREO ANEXO 01)
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
@@ -536,8 +538,8 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                   <div className="flex flex-col gap-2">
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Últimas Publicações</span>
                     {diario.edicoes_recentes.slice(0, 3).map((ed: DiarioEdicao, i: number) => (
-                      <a key={i} href={ed.link} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
-                        <span className="text-xs font-mono font-bold text-gov-dark">{ed.data}</span>
+                      <a key={i} href={ed.url || ed.link || '#'} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
+                        <span className="text-xs font-mono font-bold text-gov-dark">{ed.date || ed.data || '—'}</span>
                         <span className="text-[10px] font-bold text-gov-blue uppercase">Visualizar →</span>
                       </a>
                     ))}
@@ -545,9 +547,21 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
-                <AlertCircle size={20} className="text-gray-400" />
-                <span>DIÁRIO OFICIAL NÃO INDEXADO.</span>
+              <div className="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200">
+                <div className="flex items-center gap-2 text-sm font-mono text-gray-600">
+                  <AlertCircle size={16} className="text-yellow-500 shrink-0" />
+                  <span>DIÁRIO NÃO INDEXADO NA BASE FEDERAL.</span>
+                </div>
+                {diario.link_portal && (
+                  <a
+                    href={diario.link_portal}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-center text-xs font-mono font-bold text-gov-blue hover:underline uppercase bg-blue-50 border border-blue-200 py-2 px-3"
+                  >
+                    CONSULTAR NO QUERIDO DIÁRIO →
+                  </a>
+                )}
               </div>
             )}
           </section>
