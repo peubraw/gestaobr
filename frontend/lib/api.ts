@@ -65,7 +65,8 @@ export interface Licitacao {
 
 export interface Licitacoes {
   disponivel: boolean;
-  licitacoes_recentes?: Licitacao[];
+  licitacoes?: Licitacao[];
+  licitacoes_recentes?: Licitacao[]; // legacy alias
 }
 
 export interface Eleicoes {
