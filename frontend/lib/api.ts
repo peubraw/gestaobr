@@ -98,9 +98,6 @@ export interface Seguranca {
   ano?: string;
   nota?: string;
 }
-  data: string;
-  link: string;
-}
 
 export interface Diario {
   disponivel: boolean;
