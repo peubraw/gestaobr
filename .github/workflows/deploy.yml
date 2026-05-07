@@ -63,23 +63,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/peubraw/gestaobr-backend:latest
-            docker pull ghcr.io/peubraw/gestaobr-frontend:latest
-            docker stop gestaobr-backend gestaobr-frontend 2>/dev/null || true
-            docker rm gestaobr-backend gestaobr-frontend 2>/dev/null || true
-            docker network create gestaobr-net 2>/dev/null || true
-            docker run -d \
-              --name gestaobr-backend \
-              --network gestaobr-net \
-              --restart unless-stopped \
-              -p 8003:8000 \
-              ghcr.io/peubraw/gestaobr-backend:latest
-            docker run -d \
-              --name gestaobr-frontend \
-              --network gestaobr-net \
-              --restart unless-stopped \
-              -p 3005:3000 \
-              -e BACKEND_URL=http://gestaobr-backend:8000 \
-              -e NEXT_PUBLIC_API_URL=/gestaobr/api \
-              ghcr.io/peubraw/gestaobr-frontend:latest
+            cd /var/www/gestaobr
+            docker compose pull
+            docker compose up -d
             docker image prune -f
