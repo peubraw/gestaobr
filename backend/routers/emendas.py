@@ -19,6 +19,9 @@ CONTAS_RELEVANTES = {
     "ReceitasCorrentes",
 }
 
+# Column name for realized revenues in RREO Anexo 01
+COLUNA_REALIZADA = "Até o Bimestre (c)"
+
 
 def _validar_ibge(ibge: str) -> None:
     if not (ibge.isdigit() and len(ibge) == 7):
@@ -80,8 +83,8 @@ async def emendas_municipio(ibge: str):
         uf = meta.get("uf", "")
         exercicio = meta.get("exercicio", 2023)
 
-        # Filter: realized revenues (coluna = RECEITAS REALIZADAS)
-        realizadas = [i for i in items if i.get("coluna") == "RECEITAS REALIZADAS"]
+        # Filter: realized revenues
+        realizadas = [i for i in items if i.get("coluna") == COLUNA_REALIZADA]
 
         resumo: list[dict] = []
         receita_total: float | None = None
@@ -96,9 +99,10 @@ async def emendas_municipio(ibge: str):
 
             if cod in CONTAS_RELEVANTES and valor is not None:
                 resumo.append({
-                    "conta": conta,
-                    "cod": cod,
+                    "autor": cod,
+                    "acao": conta,
                     "valor": valor,
+                    "funcao": "Finanças Municipais",
                 })
 
         return {
@@ -110,6 +114,10 @@ async def emendas_municipio(ibge: str):
             "populacao": populacao,
             "receita_total_realizada": receita_total,
             "receita_per_capita": round(receita_total / populacao, 2) if receita_total and populacao else None,
+            # Frontend-compatible fields
+            "total_emendas": len(resumo),
+            "valor_total": receita_total,
+            "emendas": resumo[:8],
             "resumo_receitas": resumo[:8],
             "fonte": "SICONFI — Tesouro Nacional (RREO Anexo 01)",
         }

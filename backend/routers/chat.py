@@ -221,7 +221,7 @@ async def chat_municipio(ibge: str, body: ChatRequest):
                 headers={
                     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                     "HTTP-Referer": "https://gestaobr.com.br",
-                    "X-Title": "GestãoBR",
+                    "X-Title": "GestãoBR".encode("ascii", "replace").decode("ascii"),
                 },
                 json={
                     "model": DEFAULT_MODEL,

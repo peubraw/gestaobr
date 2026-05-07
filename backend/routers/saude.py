@@ -9,7 +9,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 CNES_URL = "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos"
-PAGINAS_PARA_BUSCAR = 8
+PAGINAS_PARA_BUSCAR = 15  # até 300 estabelecimentos
 LIMIT_POR_PAGINA = 20
 
 
@@ -22,7 +22,7 @@ async def _buscar_pagina(client: httpx.AsyncClient, offset: int, ibge6: str) -> 
     try:
         response = await client.get(
             CNES_URL,
-            params={"municipio_codigo": ibge6, "limit": LIMIT_POR_PAGINA, "offset": offset},
+            params={"codigo_municipio": ibge6, "limit": LIMIT_POR_PAGINA, "offset": offset},
             headers={"Accept": "application/json"},
         )
         if response.status_code != 200:
@@ -38,7 +38,6 @@ async def saude_municipio(ibge: str):
     try:
         _validar_ibge(ibge)
         ibge6 = ibge[:6]
-        codigo_municipio_int = int(ibge6)
 
         async with httpx.AsyncClient(timeout=30) as client:
             tasks = [
@@ -47,12 +46,10 @@ async def saude_municipio(ibge: str):
             ]
             resultados = await asyncio.gather(*tasks)
 
-        # Flatten and filter by correct municipio
+        # Flatten results — API already filters by municipio
         todos: list[dict] = []
         for pagina in resultados:
-            for item in pagina:
-                if item.get("codigo_municipio") == codigo_municipio_int:
-                    todos.append(item)
+            todos.extend(pagina)
 
         # Deduplicate by codigo_cnes
         vistos: set[int] = set()

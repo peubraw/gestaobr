@@ -278,9 +278,9 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
           {/* Licitações */}
           <section id="licitacoes" className="mc-card">
             <SectionHeader icon={ShoppingBag} title="Licitações Recentes" />
-            {licitacoes.disponivel && licitacoes.licitacoes_recentes && licitacoes.licitacoes_recentes.length > 0 ? (
+            {licitacoes.disponivel && licitacoes.licitacoes && licitacoes.licitacoes.length > 0 ? (
               <div className="flex flex-col gap-2">
-                {licitacoes.licitacoes_recentes.map((lic: Licitacao, i: number) => (
+                {licitacoes.licitacoes.map((lic: Licitacao, i: number) => (
                   <div key={i} className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-xs font-mono font-bold text-gov-dark">{lic.numero || 'S/N'}</span>
