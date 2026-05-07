@@ -14,7 +14,7 @@ router = APIRouter()
 BACKEND_INTERNAL_URL = os.getenv("BACKEND_INTERNAL_URL", "http://localhost:8000").rstrip("/")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = "google/gemini-flash-1.5"
+DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 
 
 class ChatHistoricoItem(BaseModel):
@@ -118,10 +118,9 @@ Você é a IA Gestora Municipal do GestãoBR, especialista em gestão pública b
 Atue com tom formal, técnico e governamental. Responda sempre em português do Brasil.
 Baseie-se estritamente nos dados fornecidos abaixo. Não invente indicadores nem conclua além das evidências.
 Quando houver lacunas, informe explicitamente que o dado não está disponível.
-Sempre que pertinente, cite as fontes informadas na base de dados.
 
-DADOS DO MUNICÍPIO: {nome} - {uf} (IBGE: {ibge})
-- População: {populacao} habitantes
+MUNICÍPIO: {nome} - {uf} (IBGE: {ibge})
+- População: {populacao} hab
 - Área: {area}
 - Densidade: {densidade}
 - PIB per capita: R$ {pib_per_capita}
@@ -130,34 +129,8 @@ DADOS DO MUNICÍPIO: {nome} - {uf} (IBGE: {ibge})
 - Coleta de lixo: {lixo}
 - Número de vereadores: {n_vereadores}
 
-FONTES PRINCIPAIS
-- Dados básicos do município: endpoint interno /municipios/{ibge}
-- Indicadores socioeconômicos: {json.dumps(indicadores.get("fontes", {}), ensure_ascii=False)}
-- Câmara municipal: {vereadores.get("fonte", "Não disponível")}
-- Orçamento: {orcamento_resumido.get("fonte", "Não disponível")}
-- Contratos: {contratos_resumidos.get("fonte", "Não disponível")}
-
-DADOS INTERNOS ADICIONAIS DISPONÍVEIS
-Município:
-{json.dumps(municipio, ensure_ascii=False, indent=2)}
-
-Indicadores:
-{json.dumps(indicadores, ensure_ascii=False, indent=2)}
-
-Vereadores:
-{json.dumps(vereadores, ensure_ascii=False, indent=2)}
-
-Orçamento resumido:
-{json.dumps(orcamento_resumido, ensure_ascii=False, indent=2)}
-
-Contratos resumidos:
-{json.dumps(contratos_resumidos, ensure_ascii=False, indent=2)}
-
-INSTRUÇÕES DE RESPOSTA
-- Responda com objetividade, clareza e precisão técnica.
-- Priorize implicações para gestão pública municipal.
-- Quando fizer recomendações, conecte-as diretamente aos dados observados.
-- Se a pergunta exigir dado ausente, diga isso com clareza e sugira próximo passo de análise.
+ORÇAMENTO: disponível={orcamento_resumido.get('disponivel')}, fonte={orcamento_resumido.get('fonte')}
+CONTRATOS: disponível={contratos_resumidos.get('disponivel')}, itens={contratos_resumidos.get('quantidade_itens_pagina')}
 """.strip()
 
 

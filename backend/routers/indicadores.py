@@ -103,24 +103,46 @@ async def _analfabetismo(ibge6: str) -> float | None:
     return None
 
 
-async def _pib_per_capita(ibge7: str) -> tuple[float | None, int | None]:
+async def _populacao(ibge7: str) -> float | None:
     """
-    Calcula PIB per capita = PIB_total (R$ Mil) × 1000 ÷ população estimada.
-    - PIB total: SIDRA tabela 5938, variável 37 (Mil Reais)
-    - População: SIDRA tabela 6579, variável 9324 (estimativa anual)
-    Busca o último ano disponível entre 2019-2023.
+    Busca população do município. Tenta:
+    1. SIDRA tabela 9514 var 93 (Censo 2022 — melhor cobertura)
+    2. SIDRA tabela 6579 var 9324 (estimativa anual)
     """
     import asyncio
-    ibge6 = ibge7[:6]
+    # Tabela 9514: Censo 2022, var 93 = população residente total
+    pop_raw = await _sidra_v3_serie("9514", "2022", "93", ibge7)
+    pop = _safe_float(pop_raw)
+    if pop and pop > 0:
+        return pop
+
+    # Fallback: estimativa anual 6579
+    for ano in ("2022", "2021", "2020"):
+        pop_raw2 = await _sidra_v3_serie("6579", ano, "9324", ibge7)
+        pop2 = _safe_float(pop_raw2)
+        if pop2 and pop2 > 0:
+            return pop2
+
+    return None
+
+
+async def _pib_per_capita(ibge7: str) -> tuple[float | None, int | None]:
+    """
+    Calcula PIB per capita = PIB_total (R$ Mil) × 1000 ÷ população.
+    - PIB total: SIDRA tabela 5938, variável 37 (Mil Reais)
+    - População: tabela 9514 (Censo 2022) ou 6579 (estimativa)
+    Busca o último ano disponível entre 2019-2022.
+    """
+    import asyncio
+
+    pop = await _populacao(ibge7)
+    if not pop or pop <= 0:
+        return None, None
 
     for ano in ("2022", "2021", "2020", "2019"):
-        pib_raw, pop_raw = await asyncio.gather(
-            _sidra_v3_serie("5938", ano, "37", ibge6),
-            _sidra_v3_serie("6579", ano, "9324", ibge6),
-        )
+        pib_raw = await _sidra_v3_serie("5938", ano, "37", ibge7)
         pib = _safe_float(pib_raw)
-        pop = _safe_float(pop_raw)
-        if pib and pop and pop > 0:
+        if pib and pib > 0:
             per_capita = round((pib * 1000) / pop, 2)
             return per_capita, int(ano)
 
