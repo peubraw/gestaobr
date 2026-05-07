@@ -85,7 +85,7 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
   // Helper values
   const hasOrçamento = orcamento.disponivel && orcamento.resumo && orcamento.resumo.length > 0;
-  const totalReceita = hasOrçamento ? orcamento.resumo.find((r: any) => r.no_conta?.toLowerCase().includes('receitas') || r.no_conta?.toLowerCase().includes('total'))?.vl_realizado : null;
+  const totalReceita = hasOrçamento ? (orcamento.resumo ?? []).find((r: any) => r.no_conta?.toLowerCase().includes('receitas') || r.no_conta?.toLowerCase().includes('total'))?.vl_realizado : null;
 
   return (
     <div className="flex flex-col gap-6">
