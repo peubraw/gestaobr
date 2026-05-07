@@ -12,24 +12,24 @@ router = APIRouter()
 
 RSS_FEEDS = [
     {
-        "nome": "Agência Brasil",
-        "url": "https://agenciabrasil.ebc.com.br/rss/geral/feed.xml",
-        "tipo": "agencia_oficial",
+        "nome": "Folha de S.Paulo — Poder",
+        "url": "https://feeds.folha.uol.com.br/poder/rss091.xml",
+        "tipo": "imprensa",
     },
     {
-        "nome": "Câmara dos Deputados",
-        "url": "https://www.camara.leg.br/noticias/rss",
-        "tipo": "legislativo",
+        "nome": "Poder360",
+        "url": "https://www.poder360.com.br/feed/",
+        "tipo": "imprensa",
     },
     {
-        "nome": "Senado Federal",
-        "url": "https://www12.senado.leg.br/noticias/rss/ultimas",
-        "tipo": "legislativo",
+        "nome": "G1 Política",
+        "url": "https://g1.globo.com/rss/g1/politica/feed.xml",
+        "tipo": "imprensa",
     },
     {
-        "nome": "Portal Gov.br",
-        "url": "https://www.gov.br/pt-br/noticias/feed",
-        "tipo": "governo",
+        "nome": "UOL Notícias",
+        "url": "https://rss.uol.com.br/feed/noticias.xml",
+        "tipo": "imprensa",
     },
 ]
 
