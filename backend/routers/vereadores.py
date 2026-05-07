@@ -76,7 +76,9 @@ async def vereadores_municipio(codigo_ibge: str):
 
     return {
         "codigo_ibge": codigo_ibge,
+        "disponivel": n_vereadores is not None,
         "n_vereadores": n_vereadores,
+        "populacao": populacao,
         "fonte": "Cálculo conforme STF RE 197.917 — faixas populacionais (Censo 2022)",
         "aviso": (
             "Número de vagas calculado por faixa populacional (lei brasileira). "
