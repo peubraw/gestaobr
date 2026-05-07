@@ -43,6 +43,72 @@ export interface CamaraInfo {
   fonte: string;
 }
 
+export interface Saude {
+  disponivel: boolean;
+  total_estabelecimentos?: number;
+  hospitais?: number;
+  ubs?: number;
+  laboratorios?: number;
+}
+
+export interface Educacao {
+  disponivel: boolean;
+  taxa_escolarizacao?: number;
+}
+
+export interface Licitacao {
+  numero: string;
+  objeto: string;
+  valor: number;
+  situacao: string;
+}
+
+export interface Licitacoes {
+  disponivel: boolean;
+  licitacoes_recentes?: Licitacao[];
+}
+
+export interface Eleicoes {
+  disponivel: boolean;
+  eleicao_ano?: number;
+}
+
+export interface DiarioEdicao {
+  data: string;
+  link: string;
+}
+
+export interface Diario {
+  disponivel: boolean;
+  total_edicoes?: number;
+  edicoes_recentes?: DiarioEdicao[];
+}
+
+export interface Emenda {
+  autor: string;
+  valor: number;
+  acao: string;
+}
+
+export interface Emendas {
+  disponivel: boolean;
+  total_emendas?: number;
+  valor_total?: number;
+  emendas?: Emenda[];
+}
+
+export interface Seguranca {
+  disponivel: boolean;
+  taxa_homicidios_100k?: number;
+  ano?: number;
+}
+
+export interface MeioAmbiente {
+  disponivel: boolean;
+  bioma?: string;
+  area_km2?: number;
+}
+
 export async function buscarMunicipios(q: string): Promise<MunicipioBusca[]> {
   const r = await fetch(`${API_BASE}/municipios/busca?q=${encodeURIComponent(q)}`, { next: { revalidate: 86400 } });
   if (!r.ok) return [];
@@ -75,6 +141,54 @@ export async function getCamara(ibge: string): Promise<CamaraInfo> {
 
 export async function getContratos(ibge: string, pagina = 1) {
   const r = await fetch(`${API_BASE}/contratos/${ibge}?pagina=${pagina}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getSaude(ibge: string): Promise<Saude> {
+  const r = await fetch(`${API_BASE}/saude/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getEducacao(ibge: string): Promise<Educacao> {
+  const r = await fetch(`${API_BASE}/educacao/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getLicitacoes(ibge: string): Promise<Licitacoes> {
+  const r = await fetch(`${API_BASE}/licitacoes/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getEleicoes(ibge: string): Promise<Eleicoes> {
+  const r = await fetch(`${API_BASE}/eleicoes/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getDiario(ibge: string): Promise<Diario> {
+  const r = await fetch(`${API_BASE}/diario/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getEmendas(ibge: string): Promise<Emendas> {
+  const r = await fetch(`${API_BASE}/emendas/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getSeguranca(ibge: string): Promise<Seguranca> {
+  const r = await fetch(`${API_BASE}/seguranca/${ibge}`, { next: { revalidate: 3600 } });
+  if (!r.ok) return { disponivel: false };
+  return r.json();
+}
+
+export async function getMeioAmbiente(ibge: string): Promise<MeioAmbiente> {
+  const r = await fetch(`${API_BASE}/meio_ambiente/${ibge}`, { next: { revalidate: 3600 } });
   if (!r.ok) return { disponivel: false };
   return r.json();
 }

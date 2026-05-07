@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Users, FileText, Building2, TrendingUp, MapPin, AlertCircle, CheckCircle2, Clock, Globe, BarChart3, Gauge, Landmark, Scale, Wallet, Activity } from 'lucide-react';
-import { getMunicipio, getIndicadores, getOrcamento, getCamara, getContratos, formatNum } from '@/lib/api';
+import { ArrowLeft, Users, FileText, Building2, TrendingUp, MapPin, AlertCircle, CheckCircle2, Clock, Globe, BarChart3, Gauge, Landmark, Scale, Wallet, Activity, HeartPulse, GraduationCap, ShoppingBag, Vote, Newspaper, Banknote, Shield, Leaf, Bot } from 'lucide-react';
+import { getMunicipio, getIndicadores, getOrcamento, getCamara, getContratos, getSaude, getEducacao, getLicitacoes, getEleicoes, getDiario, getEmendas, getSeguranca, getMeioAmbiente, formatNum, Licitacao, Emenda, DiarioEdicao } from '@/lib/api';
+import IaGestora from '@/components/IaGestora';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,13 +62,22 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
   const { ibge } = await params;
 
   let municipio, indicadores, orcamento, camara, contratos;
+  let saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente;
   try {
-    [municipio, indicadores, orcamento, camara, contratos] = await Promise.all([
+    [municipio, indicadores, orcamento, camara, contratos, saude, educacao, licitacoes, eleicoes, diario, emendas, seguranca, meioAmbiente] = await Promise.all([
       getMunicipio(ibge),
       getIndicadores(ibge),
       getOrcamento(ibge),
       getCamara(ibge),
       getContratos(ibge),
+      getSaude(ibge),
+      getEducacao(ibge),
+      getLicitacoes(ibge),
+      getEleicoes(ibge),
+      getDiario(ibge),
+      getEmendas(ibge),
+      getSeguranca(ibge),
+      getMeioAmbiente(ibge),
     ]);
   } catch {
     notFound();
@@ -94,11 +104,20 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             DADOS SINCRONIZADOS
           </span>
           <span className="text-gray-400 flex items-center gap-1"><Clock size={12} /> REF: 2025</span>
-          <div className="hidden md:flex gap-3 text-gov-blue">
+          <div className="hidden md:flex flex-wrap gap-3 text-gov-blue">
             <a href="#indicadores" className="hover:underline">INDICADORES</a>
             <a href="#financas" className="hover:underline">FINANÇAS</a>
             <a href="#legislativo" className="hover:underline">LEGISLATIVO</a>
             <a href="#contratos" className="hover:underline">CONTRATOS</a>
+            <a href="#saude" className="hover:underline">SAÚDE</a>
+            <a href="#educacao" className="hover:underline">EDUCAÇÃO</a>
+            <a href="#licitacoes" className="hover:underline">LICITAÇÕES</a>
+            <a href="#eleicoes" className="hover:underline">ELEIÇÕES</a>
+            <a href="#diario" className="hover:underline">DIÁRIO</a>
+            <a href="#emendas" className="hover:underline">EMENDAS</a>
+            <a href="#seguranca" className="hover:underline">SEGURANÇA</a>
+            <a href="#meioambiente" className="hover:underline">MEIO AMBIENTE</a>
+            <a href="#ia-gestora" className="hover:underline flex items-center gap-1"><Bot size={12} /> IA GESTORA</a>
           </div>
         </div>
       </div>
@@ -215,6 +234,117 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
               </div>
             )}
           </section>
+
+          {/* Saúde */}
+          <section id="saude" className="mc-card">
+            <SectionHeader icon={HeartPulse} title="Saúde Pública" />
+            {saude.disponivel ? (
+              <div className="grid grid-cols-2 gap-3">
+                <KpiCard title="Total Estabelecimentos" value={saude.total_estabelecimentos?.toString() || '—'} icon={HeartPulse} />
+                <KpiCard title="Hospitais" value={saude.hospitais?.toString() || '—'} icon={Building2} />
+                <KpiCard title="UBS" value={saude.ubs?.toString() || '—'} icon={Activity} />
+                <KpiCard title="Laboratórios" value={saude.laboratorios?.toString() || '—'} icon={FileText} />
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE SAÚDE NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Educação */}
+          <section id="educacao" className="mc-card">
+            <SectionHeader icon={GraduationCap} title="Educação" />
+            {educacao.disponivel ? (
+              <div className="grid grid-cols-1 gap-4">
+                <GaugeCard 
+                  title="Taxa de Escolarização (6 a 14 anos)" 
+                  value={educacao.taxa_escolarizacao ? formatNum(educacao.taxa_escolarizacao, 1) : '—'} 
+                  pct={educacao.taxa_escolarizacao ?? null} 
+                />
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">
+                  FONTE: IBGE / INEP
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE EDUCAÇÃO NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Licitações */}
+          <section id="licitacoes" className="mc-card">
+            <SectionHeader icon={ShoppingBag} title="Licitações Recentes" />
+            {licitacoes.disponivel && licitacoes.licitacoes_recentes && licitacoes.licitacoes_recentes.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {licitacoes.licitacoes_recentes.map((lic: Licitacao, i: number) => (
+                  <div key={i} className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-xs font-mono font-bold text-gov-dark">{lic.numero || 'S/N'}</span>
+                      <span className="text-[10px] font-mono text-gov-green font-bold">
+                        R$ {lic.valor ? Number(lic.valor).toLocaleString('pt-BR') : '—'}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-gray-500 line-clamp-2 italic mb-2">
+                      {lic.objeto || '—'}
+                    </div>
+                    <div className="text-[9px] font-mono font-bold uppercase text-gov-blue">
+                      SITUAÇÃO: {lic.situacao || '—'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>NENHUMA LICITAÇÃO RECENTE ENCONTRADA.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Emendas */}
+          <section id="emendas" className="mc-card">
+            <SectionHeader icon={Banknote} title="Emendas Parlamentares" />
+            {emendas.disponivel ? (
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <KpiCard title="Total de Emendas" value={emendas.total_emendas?.toString() || '—'} icon={FileText} />
+                  <KpiCard title="Valor Total" value={emendas.valor_total ? formatNum(emendas.valor_total, 0) : '—'} unit="R$" icon={Wallet} />
+                </div>
+                {emendas.emendas && emendas.emendas.length > 0 && (
+                  <div className="overflow-x-auto mt-2">
+                    <table className="w-full text-left border-collapse font-mono text-xs">
+                      <thead>
+                        <tr className="bg-gray-200 text-gov-dark">
+                          <th className="p-2 border border-gray-300">AUTOR</th>
+                          <th className="p-2 border border-gray-300">AÇÃO</th>
+                          <th className="p-2 border border-gray-300 text-right">VALOR (R$)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {emendas.emendas.map((em: Emenda, i: number) => (
+                          <tr key={i} className="hover:bg-blue-50">
+                            <td className="p-2 border border-gray-200 truncate max-w-[120px] font-bold">{em.autor || '—'}</td>
+                            <td className="p-2 border border-gray-200 truncate max-w-[150px]">{em.acao || '—'}</td>
+                            <td className="p-2 border border-gray-200 text-right font-bold text-gov-dark">{em.valor ? Number(em.valor).toLocaleString('pt-BR') : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE EMENDAS NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
         </div>
 
         {/* Coluna Direita (5) */}
@@ -280,8 +410,112 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             )}
           </section>
 
+          {/* Segurança */}
+          <section id="seguranca" className="mc-card">
+            <SectionHeader icon={Shield} title="Segurança Pública" />
+            {seguranca.disponivel ? (
+              <div className="flex flex-col gap-4">
+                <GaugeCard 
+                  title={`Taxa de Homicídios (${seguranca.ano || '2023'})`} 
+                  value={seguranca.taxa_homicidios_100k ? formatNum(seguranca.taxa_homicidios_100k, 1) : '—'} 
+                  pct={seguranca.taxa_homicidios_100k ?? null} 
+                  invert={true}
+                  unit="/100k"
+                />
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">
+                  FONTE: IBGE / DATASUS
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE SEGURANÇA NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Meio Ambiente */}
+          <section id="meioambiente" className="mc-card">
+            <SectionHeader icon={Leaf} title="Meio Ambiente" />
+            {meioAmbiente.disponivel ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 border border-gov-border p-3 flex flex-col justify-center">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">Bioma Predominante</span>
+                  <div className="inline-flex items-center justify-center px-3 py-1 bg-gov-green text-white font-bold text-sm uppercase rounded w-full">
+                    {meioAmbiente.bioma || '—'}
+                  </div>
+                </div>
+                <KpiCard title="Área Preservada" value={meioAmbiente.area_km2 ? formatNum(meioAmbiente.area_km2, 1) : '—'} unit="km²" icon={MapPin} />
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS DE MEIO AMBIENTE NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Eleições */}
+          <section id="eleicoes" className="mc-card">
+            <SectionHeader icon={Vote} title={`Eleições (${eleicoes.eleicao_ano || 'Recentes'})`} />
+            {eleicoes.disponivel ? (
+              <div className="flex flex-col gap-2">
+                <div className="bg-gov-blue text-white p-4 flex flex-col items-center justify-center text-center">
+                  <Vote size={32} className="mb-2 opacity-80" />
+                  <span className="text-lg font-bold uppercase tracking-wider font-mono">Resultados Eleitorais</span>
+                  <a href={`https://resultados.tse.jus.br/`} target="_blank" rel="noreferrer" className="mt-3 text-xs font-bold underline hover:text-gov-yellow">
+                    CONSULTAR NO PORTAL DO TSE
+                  </a>
+                </div>
+                <div className="text-[9px] font-mono text-gray-400 text-right uppercase">
+                  FONTE: TRIBUNAL SUPERIOR ELEITORAL
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DADOS ELEITORAIS NÃO DISPONÍVEIS.</span>
+              </div>
+            )}
+          </section>
+
+          {/* Diário Oficial */}
+          <section id="diario" className="mc-card">
+            <SectionHeader icon={Newspaper} title="Diário Oficial do Município" />
+            {diario.disponivel ? (
+              <div className="flex flex-col gap-3">
+                <div className="bg-gray-50 border border-gov-border p-3 flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Edições Indexadas</span>
+                  <span className="text-xl font-bold text-gov-dark font-mono">{diario.total_edicoes || 0}</span>
+                </div>
+                {diario.edicoes_recentes && diario.edicoes_recentes.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">Últimas Publicações</span>
+                    {diario.edicoes_recentes.slice(0, 3).map((ed: DiarioEdicao, i: number) => (
+                      <a key={i} href={ed.link} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 border border-gray-200 hover:border-gov-blue hover:bg-blue-50 transition-colors">
+                        <span className="text-xs font-mono font-bold text-gov-dark">{ed.data}</span>
+                        <span className="text-[10px] font-bold text-gov-blue uppercase">Visualizar →</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
+                <AlertCircle size={20} className="text-gray-400" />
+                <span>DIÁRIO OFICIAL NÃO INDEXADO.</span>
+              </div>
+            )}
+          </section>
+
         </div>
       </div>
+
+      {/* IA Gestora Section */}
+      <section id="ia-gestora" className="mc-card">
+        <SectionHeader icon={Bot} title="IA Gestora Municipal" />
+        <IaGestora ibge={ibge} nomeMunicipio={municipio.nome} />
+      </section>
     </div>
   );
 }
