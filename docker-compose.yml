@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: ./backend
+    container_name: gestaobr-backend
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8003:8000"
+    networks:
+      - gestaobr-net
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_API_URL=/gestaobr/api
+    container_name: gestaobr-frontend
+    restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://gestaobr-backend:8000
+      - NEXT_PUBLIC_API_URL=/gestaobr/api
+    ports:
+      - "3005:3000"
+    depends_on:
+      - backend
+    networks:
+      - gestaobr-net
+
+networks:
+  gestaobr-net:
+    driver: bridge

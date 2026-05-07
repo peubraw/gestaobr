@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Rawline', 'Raleway', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded border border-gov-border shadow-sm p-5;
+  }
+
+  .section-title {
+    @apply text-lg font-bold text-gov-dark border-l-4 border-gov-blue pl-3 mb-4;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold;
+  }
+
+  .btn-primary {
+    @apply bg-gov-blue text-white font-semibold px-5 py-2.5 rounded hover:bg-blue-700 transition-colors;
+  }
+
+  .data-table {
+    @apply w-full text-sm border-collapse;
+  }
+
+  .data-table th {
+    @apply bg-gov-dark text-white text-left px-4 py-2.5 text-xs uppercase tracking-wider font-semibold;
+  }
+
+  .data-table td {
+    @apply px-4 py-2.5 border-b border-gov-border;
+  }
+
+  .data-table tr:nth-child(even) td {
+    @apply bg-gray-50;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-blue-50;
+  }
+}
