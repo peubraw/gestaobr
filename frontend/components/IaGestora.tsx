@@ -3,6 +3,47 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, AlertCircle, Loader2 } from 'lucide-react';
 
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split('\n');
+  const nodes: React.ReactNode[] = [];
+
+  const parseInline = (s: string, key: string): React.ReactNode => {
+    // bold: **text**
+    const parts = s.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <span key={key}>
+        {parts.map((p, i) => {
+          if (p.startsWith('**') && p.endsWith('**')) {
+            return <strong key={i}>{p.slice(2, -2)}</strong>;
+          }
+          return p;
+        })}
+      </span>
+    );
+  };
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith('### ')) {
+      nodes.push(<h3 key={i} className="text-sm font-bold text-gov-dark mt-3 mb-1 border-b border-gray-300 pb-0.5">{line.slice(4)}</h3>);
+    } else if (line.startsWith('## ')) {
+      nodes.push(<h2 key={i} className="text-base font-black text-gov-dark mt-3 mb-1">{line.slice(3)}</h2>);
+    } else if (line.startsWith('# ')) {
+      nodes.push(<h1 key={i} className="text-lg font-black text-gov-dark mt-3 mb-1">{line.slice(2)}</h1>);
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      nodes.push(<li key={i} className="ml-4 list-disc text-sm">{parseInline(line.slice(2), `li-${i}`)}</li>);
+    } else if (line.trim() === '') {
+      nodes.push(<br key={i} />);
+    } else {
+      nodes.push(<p key={i} className="text-sm leading-relaxed">{parseInline(line, `p-${i}`)}</p>);
+    }
+    i++;
+  }
+  return nodes;
+}
+
 interface IaGestoraProps {
   ibge: string;
   nomeMunicipio: string;
@@ -96,12 +137,12 @@ export default function IaGestora({ ibge, nomeMunicipio }: IaGestoraProps) {
               </div>
             )}
             
-            <div className={`p-3 max-w-[85%] text-sm whitespace-pre-wrap ${
+            <div className={`p-3 max-w-[85%] ${
               msg.role === 'user' 
-                ? 'bg-gov-blue text-white rounded-l-lg rounded-br-lg' 
+                ? 'bg-gov-blue text-white rounded-l-lg rounded-br-lg text-sm' 
                 : 'bg-gray-100 text-gov-dark rounded-r-lg rounded-bl-lg'
             }`}>
-              {msg.content}
+              {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
             </div>
           </div>
         ))}

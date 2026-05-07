@@ -283,16 +283,25 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
                 {licitacoes.licitacoes.map((lic: Licitacao, i: number) => (
                   <div key={i} className="flex flex-col p-3 bg-gray-50 border border-gray-200 hover:border-gov-blue transition-colors">
                     <div className="flex justify-between items-start mb-1">
-                      <span className="text-xs font-mono font-bold text-gov-dark">{lic.numero || 'S/N'}</span>
-                      <span className="text-[10px] font-mono text-gov-green font-bold">
-                        R$ {lic.valor ? Number(lic.valor).toLocaleString('pt-BR') : '—'}
+                      <span className="text-xs font-mono font-bold text-gov-dark truncate max-w-[60%]">
+                        {lic.numero_controle || lic.numero || 'S/N'}
+                      </span>
+                      <span className="text-[10px] font-mono text-gray-500 font-bold">
+                        {lic.ano || lic.data_publicacao?.slice(0, 4) || '—'}
                       </span>
                     </div>
                     <div className="text-[10px] text-gray-500 line-clamp-2 italic mb-2">
-                      {lic.objeto || '—'}
+                      {lic.titulo || lic.objeto || '—'}
                     </div>
-                    <div className="text-[9px] font-mono font-bold uppercase text-gov-blue">
-                      SITUAÇÃO: {lic.situacao || '—'}
+                    <div className="flex justify-between items-center">
+                      <div className="text-[9px] font-mono font-bold uppercase text-gov-dark truncate max-w-[70%]">
+                        {lic.orgao || '—'}
+                      </div>
+                      {lic.url && (
+                        <a href={lic.url} target="_blank" rel="noreferrer" className="text-[9px] font-mono text-gov-blue hover:underline uppercase">
+                          VER →
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}

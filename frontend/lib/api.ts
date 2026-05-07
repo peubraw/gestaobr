@@ -67,10 +67,17 @@ export interface Educacao {
 }
 
 export interface Licitacao {
-  numero: string;
-  objeto: string;
-  valor: number;
-  situacao: string;
+  numero_controle: string;
+  titulo?: string;
+  objeto?: string;
+  orgao?: string;
+  ano?: string | number;
+  data_publicacao?: string;
+  url?: string;
+  // legacy fields kept for compatibility
+  numero?: string;
+  valor?: number;
+  situacao?: string;
 }
 
 export interface Licitacoes {

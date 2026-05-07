@@ -160,7 +160,7 @@ async def indicadores_municipio(codigo_ibge: str):
     """
     import asyncio
 
-    ibge6 = codigo_ibge[:6]
+    ibge6 = codigo_ibge  # apisidra uses full 7-digit IBGE code
 
     pib_result, analfab_result, esgoto_raw, lixo_raw = await asyncio.gather(
         _pib_per_capita(codigo_ibge),

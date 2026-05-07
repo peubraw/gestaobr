@@ -83,32 +83,49 @@ async def detalhe_municipio(codigo_ibge: str):
     if not municipio:
         raise HTTPException(status_code=404, detail="Município não encontrado")
 
-    # Busca população estimada (agregado 6579, variável 9324)
+    # Busca população (Censo 2022 tabela 9514, fallback estimativa 6579) e área
     populacao = None
     area_km2 = None
     async with httpx.AsyncClient(timeout=15) as client:
         try:
+            # População: Censo 2022, tabela 9514, var 93
             r = await client.get(
-                f"{IBGE_SIDRA}/agregados/6579/periodos/2021/variaveis/9324",
+                f"{IBGE_SIDRA}/agregados/9514/periodos/2022/variaveis/93",
                 params={"localidades": f"N6[{codigo_ibge}]"}
             )
             if r.status_code == 200:
                 data = r.json()
                 series = data[0]["resultados"][0]["series"][0]["serie"]
-                populacao = int(list(series.values())[-1])
+                val = list(series.values())[-1]
+                if val and val not in ("-", "..."):
+                    populacao = int(float(str(val).replace(",", ".")))
         except Exception:
             pass
 
+        if not populacao:
+            try:
+                # Fallback: estimativa anual 6579
+                r = await client.get(
+                    f"{IBGE_SIDRA}/agregados/6579/periodos/2021/variaveis/9324",
+                    params={"localidades": f"N6[{codigo_ibge}]"}
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    series = data[0]["resultados"][0]["series"][0]["serie"]
+                    populacao = int(list(series.values())[-1])
+            except Exception:
+                pass
+
         try:
-            # Área territorial (agregado 1301, variável 614)
+            # Área territorial via IBGE localidades API
             r2 = await client.get(
-                f"{IBGE_SIDRA}/agregados/1301/periodos/2022/variaveis/614",
-                params={"localidades": f"N6[{codigo_ibge}]"}
+                f"{IBGE_V1}/localidades/municipios/{codigo_ibge}"
             )
             if r2.status_code == 200:
                 data2 = r2.json()
-                series2 = data2[0]["resultados"][0]["series"][0]["serie"]
-                area_km2 = float(list(series2.values())[-1])
+                area_raw = data2.get("area")
+                if area_raw:
+                    area_km2 = float(str(area_raw).replace(",", "."))
         except Exception:
             pass
 
