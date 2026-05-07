@@ -117,15 +117,18 @@ async def detalhe_municipio(codigo_ibge: str):
                 pass
 
         try:
-            # Área territorial via IBGE localidades API
+            # Área territorial via IBGE Cidades (indicador 29167 — Área da unidade territorial)
             r2 = await client.get(
-                f"{IBGE_V1}/localidades/municipios/{codigo_ibge}"
+                f"{IBGE_V1}/pesquisas/indicadores/29167/resultados/{codigo_ibge[:6]}"
             )
             if r2.status_code == 200:
                 data2 = r2.json()
-                area_raw = data2.get("area")
-                if area_raw:
-                    area_km2 = float(str(area_raw).replace(",", "."))
+                res = data2[0]["res"][0]["res"]
+                if res:
+                    ultimo_ano = sorted(res.keys())[-1]
+                    val = res[ultimo_ano]
+                    if val and val not in ("-", "..."):
+                        area_km2 = float(str(val).replace(",", "."))
         except Exception:
             pass
 
