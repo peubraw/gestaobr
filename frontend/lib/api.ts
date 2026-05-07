@@ -45,10 +45,20 @@ export interface CamaraInfo {
 
 export interface Saude {
   disponivel: boolean;
+  // Legacy fields
   total_estabelecimentos?: number;
   hospitais?: number;
   ubs?: number;
+  // New fields
+  total_hospitais?: number;
+  total_ubs?: number;
+  ubs_centro_saude?: number;
+  ubs_postos?: number;
+  hospitais_gerais?: number;
+  hospitais_especializados?: number;
+  upa?: number;
   laboratorios?: number;
+  ambulatorios_sus?: number;
 }
 
 export interface Educacao {
@@ -72,9 +82,22 @@ export interface Licitacoes {
 export interface Eleicoes {
   disponivel: boolean;
   eleicao_ano?: number;
+  municipio?: string;
+  uf?: string;
+  tse_resultado_url?: string;
+  governanca_municipal?: Record<string, { valor: string; ano: string }>;
+  diario_oficial_disponivel?: boolean;
 }
 
-export interface DiarioEdicao {
+export interface Seguranca {
+  disponivel: boolean;
+  obitos_registrados?: number;
+  obitos_ocorridos?: number;
+  total_obitos?: number;
+  taxa_homicidios_100k?: number; // legacy — not returned anymore
+  ano?: string;
+  nota?: string;
+}
   data: string;
   link: string;
 }
@@ -100,8 +123,12 @@ export interface Emendas {
 
 export interface Seguranca {
   disponivel: boolean;
-  taxa_homicidios_100k?: number;
-  ano?: number;
+  obitos_registrados?: number;
+  obitos_ocorridos?: number;
+  total_obitos?: number;
+  taxa_homicidios_100k?: number; // legacy — not returned anymore
+  ano?: string;
+  nota?: string;
 }
 
 export interface MeioAmbiente {

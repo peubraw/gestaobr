@@ -240,9 +240,9 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
             <SectionHeader icon={HeartPulse} title="Saúde Pública" />
             {saude.disponivel ? (
               <div className="grid grid-cols-2 gap-3">
-                <KpiCard title="Total Estabelecimentos" value={saude.total_estabelecimentos?.toString() || '—'} icon={HeartPulse} />
-                <KpiCard title="Hospitais" value={saude.hospitais?.toString() || '—'} icon={Building2} />
-                <KpiCard title="UBS" value={saude.ubs?.toString() || '—'} icon={Activity} />
+                <KpiCard title="Hospitais" value={(saude.total_hospitais ?? saude.hospitais)?.toString() || '—'} icon={Building2} />
+                <KpiCard title="UBS / Centros de Saúde" value={(saude.total_ubs ?? saude.ubs)?.toString() || '—'} icon={Activity} />
+                <KpiCard title="UPA" value={saude.upa?.toString() || '—'} icon={HeartPulse} />
                 <KpiCard title="Laboratórios" value={saude.laboratorios?.toString() || '—'} icon={FileText} />
               </div>
             ) : (
@@ -412,24 +412,31 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
           {/* Segurança */}
           <section id="seguranca" className="mc-card">
-            <SectionHeader icon={Shield} title="Segurança Pública" />
+            <SectionHeader icon={Shield} title="Mortalidade (SIM/IBGE)" />
             {seguranca.disponivel ? (
-              <div className="flex flex-col gap-4">
-                <GaugeCard 
-                  title={`Taxa de Homicídios (${seguranca.ano || '2023'})`} 
-                  value={seguranca.taxa_homicidios_100k ? formatNum(seguranca.taxa_homicidios_100k, 1) : '—'} 
-                  pct={seguranca.taxa_homicidios_100k ?? null} 
-                  invert={true}
-                  unit="/100k"
-                />
+              <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 border border-gov-border p-3 flex flex-col justify-center">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">Óbitos Registrados</span>
+                    <span className="text-2xl font-bold font-mono text-gov-dark">
+                      {seguranca.total_obitos ? Number(seguranca.total_obitos).toLocaleString('pt-BR') : '—'}
+                    </span>
+                    <span className="text-[10px] font-mono text-gray-400">{seguranca.ano || '—'}</span>
+                  </div>
+                  <div className="bg-gray-50 border border-gov-border p-3 flex flex-col justify-center">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">Fonte</span>
+                    <span className="text-xs font-mono text-gov-dark">SIM / DATASUS</span>
+                    <span className="text-[10px] font-mono text-gray-500 mt-1">Dados municipais de criminalidade não disponíveis via API pública</span>
+                  </div>
+                </div>
                 <div className="text-[9px] font-mono text-gray-400 text-right uppercase">
-                  FONTE: IBGE / DATASUS
+                  FONTE: IBGE SIDRA — SIM
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-3 bg-gray-100 border border-gray-300 p-4 text-sm font-mono text-gray-600">
                 <AlertCircle size={20} className="text-gray-400" />
-                <span>DADOS DE SEGURANÇA NÃO DISPONÍVEIS.</span>
+                <span>DADOS DE MORTALIDADE NÃO DISPONÍVEIS.</span>
               </div>
             )}
           </section>
@@ -462,13 +469,41 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
               <div className="flex flex-col gap-2">
                 <div className="bg-gov-blue text-white p-4 flex flex-col items-center justify-center text-center">
                   <Vote size={32} className="mb-2 opacity-80" />
-                  <span className="text-lg font-bold uppercase tracking-wider font-mono">Resultados Eleitorais</span>
-                  <a href={`https://resultados.tse.jus.br/`} target="_blank" rel="noreferrer" className="mt-3 text-xs font-bold underline hover:text-gov-yellow">
-                    CONSULTAR NO PORTAL DO TSE
+                  <span className="text-lg font-bold uppercase tracking-wider font-mono">Resultados Eleitorais 2024</span>
+                  <a href={eleicoes.tse_resultado_url || `https://resultados.tse.jus.br/`} target="_blank" rel="noreferrer" className="mt-3 text-xs font-bold underline hover:text-gov-yellow">
+                    CONSULTAR NO PORTAL DO TSE →
                   </a>
                 </div>
+                {eleicoes.governanca_municipal && Object.keys(eleicoes.governanca_municipal).length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    {eleicoes.governanca_municipal.plano_diretor && (
+                      <div className="bg-gray-50 border border-gov-border p-2 text-center">
+                        <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Plano Diretor</div>
+                        <div className={`text-xs font-bold font-mono ${eleicoes.governanca_municipal.plano_diretor.valor === 'Não' ? 'text-red-600' : 'text-gov-green'}`}>
+                          {eleicoes.governanca_municipal.plano_diretor.valor}
+                        </div>
+                      </div>
+                    )}
+                    {eleicoes.governanca_municipal.conselho_saude && (
+                      <div className="bg-gray-50 border border-gov-border p-2 text-center">
+                        <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Conselho Saúde</div>
+                        <div className={`text-xs font-bold font-mono ${eleicoes.governanca_municipal.conselho_saude.valor === 'Não' ? 'text-red-600' : 'text-gov-green'}`}>
+                          {eleicoes.governanca_municipal.conselho_saude.valor}
+                        </div>
+                      </div>
+                    )}
+                    {eleicoes.governanca_municipal.conselho_educacao && (
+                      <div className="bg-gray-50 border border-gov-border p-2 text-center">
+                        <div className="text-[9px] font-mono text-gray-500 uppercase mb-1">Conselho Educação</div>
+                        <div className={`text-xs font-bold font-mono ${eleicoes.governanca_municipal.conselho_educacao.valor === 'Não' ? 'text-red-600' : 'text-gov-green'}`}>
+                          {eleicoes.governanca_municipal.conselho_educacao.valor}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="text-[9px] font-mono text-gray-400 text-right uppercase">
-                  FONTE: TRIBUNAL SUPERIOR ELEITORAL
+                  FONTE: TSE · IBGE MUNIC
                 </div>
               </div>
             ) : (
