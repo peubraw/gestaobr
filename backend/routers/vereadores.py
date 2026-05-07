@@ -56,12 +56,13 @@ async def vereadores_municipio(codigo_ibge: str):
     """
     import httpx
 
-    # Busca população para calcular o número de vagas
+    # Busca população: primeiro tenta estimativa 2024 (agregado 6579), fallback Censo 2022 (9514)
     populacao = None
     async with httpx.AsyncClient(timeout=15) as client:
+        # Estimativa 2024
         try:
             r = await client.get(
-                "https://servicodados.ibge.gov.br/api/v3/agregados/9514/periodos/2022/variaveis/93",
+                "https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2024/variaveis/9324",
                 params={"localidades": f"N6[{codigo_ibge}]"}
             )
             if r.status_code == 200:
@@ -71,6 +72,20 @@ async def vereadores_municipio(codigo_ibge: str):
                     populacao = int(float(str(val).replace(",", ".")))
         except Exception:
             pass
+        # Fallback: Censo 2022
+        if not populacao:
+            try:
+                r = await client.get(
+                    "https://servicodados.ibge.gov.br/api/v3/agregados/9514/periodos/2022/variaveis/93",
+                    params={"localidades": f"N6[{codigo_ibge}]"}
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    val = list(data[0]["resultados"][0]["series"][0]["serie"].values())[-1]
+                    if val and val not in ("-", "..."):
+                        populacao = int(float(str(val).replace(",", ".")))
+            except Exception:
+                pass
 
     n_vereadores = _n_vereadores_por_populacao(populacao)
 

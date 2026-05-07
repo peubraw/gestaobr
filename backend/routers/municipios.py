@@ -83,14 +83,14 @@ async def detalhe_municipio(codigo_ibge: str):
     if not municipio:
         raise HTTPException(status_code=404, detail="Município não encontrado")
 
-    # Busca população (Censo 2022 tabela 9514, fallback estimativa 6579) e área
+    # Busca população (estimativa 2024 prioritária, fallback Censo 2022) e área
     populacao = None
     area_km2 = None
     async with httpx.AsyncClient(timeout=15) as client:
         try:
-            # População: Censo 2022, tabela 9514, var 93
+            # Estimativa populacional 2024 (tabela 6579, var 9324)
             r = await client.get(
-                f"{IBGE_SIDRA}/agregados/9514/periodos/2022/variaveis/93",
+                f"{IBGE_SIDRA}/agregados/6579/periodos/2024/variaveis/9324",
                 params={"localidades": f"N6[{codigo_ibge}]"}
             )
             if r.status_code == 200:
@@ -104,15 +104,17 @@ async def detalhe_municipio(codigo_ibge: str):
 
         if not populacao:
             try:
-                # Fallback: estimativa anual 6579
+                # Fallback: Censo 2022 (tabela 9514, var 93)
                 r = await client.get(
-                    f"{IBGE_SIDRA}/agregados/6579/periodos/2021/variaveis/9324",
+                    f"{IBGE_SIDRA}/agregados/9514/periodos/2022/variaveis/93",
                     params={"localidades": f"N6[{codigo_ibge}]"}
                 )
                 if r.status_code == 200:
                     data = r.json()
                     series = data[0]["resultados"][0]["series"][0]["serie"]
-                    populacao = int(list(series.values())[-1])
+                    val = list(series.values())[-1]
+                    if val and val not in ("-", "..."):
+                        populacao = int(float(str(val).replace(",", ".")))
             except Exception:
                 pass
 

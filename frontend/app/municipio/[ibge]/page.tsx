@@ -278,7 +278,7 @@ export default async function MunicipioPage({ params }: { params: Promise<{ ibge
 
           {/* Licitações */}
           <section id="licitacoes" className="mc-card">
-            <SectionHeader icon={ShoppingBag} title={`Execução Orçamentária ${licitacoes.ano ? `(${licitacoes.ano})` : ''}`} />
+            <SectionHeader icon={ShoppingBag} title={`Licitações e Compras Públicas ${licitacoes.ano ? `(${licitacoes.ano})` : ''}`} />
             {licitacoes.disponivel && licitacoes.licitacoes && licitacoes.licitacoes.length > 0 ? (
               <div className="flex flex-col gap-2">
                 <div className="text-[10px] font-mono text-gray-500 mb-1">DESPESAS POR FUNÇÃO — SICONFI / RREO ANEXO 02</div>
