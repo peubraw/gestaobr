@@ -12,8 +12,9 @@ from pydantic import BaseModel, Field
 router = APIRouter()
 
 BACKEND_INTERNAL_URL = os.getenv("BACKEND_INTERNAL_URL", "http://localhost:8000").rstrip("/")
-COPILOT_PROXY_URL = "http://localhost:7800/v1/chat/completions"
-DEFAULT_MODEL = "claude-haiku-4.5"
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+DEFAULT_MODEL = "google/gemini-flash-1.5"
 
 
 class ChatHistoricoItem(BaseModel):
@@ -216,7 +217,12 @@ async def chat_municipio(ibge: str, body: ChatRequest):
 
         try:
             response = await client.post(
-                COPILOT_PROXY_URL,
+                OPENROUTER_URL,
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "HTTP-Referer": "https://gestaobr.com.br",
+                    "X-Title": "GestãoBR",
+                },
                 json={
                     "model": DEFAULT_MODEL,
                     "messages": messages,
@@ -227,13 +233,13 @@ async def chat_municipio(ibge: str, body: ChatRequest):
         except httpx.HTTPError:
             raise HTTPException(
                 status_code=503,
-                detail="Serviço de IA indisponível no momento. Verifique o copilot-proxy em http://localhost:7800.",
+                detail="Serviço de IA indisponível no momento.",
             )
 
     if response.status_code != 200:
         raise HTTPException(
             status_code=503,
-            detail="Serviço de IA indisponível no momento. O copilot-proxy não respondeu com sucesso.",
+            detail="Serviço de IA indisponível no momento. OpenRouter não respondeu com sucesso.",
         )
 
     payload = _as_dict(response.json())
