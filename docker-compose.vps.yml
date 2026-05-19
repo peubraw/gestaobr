@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gestaobr-postgres
+    restart: unless-stopped
+    ports: []
+    volumes:
+      - gestaobr_postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: gestaobr
+      POSTGRES_PASSWORD: gestaobr2026
+      POSTGRES_DB: gestaobr
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gestaobr -d gestaobr"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gestaobr-net
+
+  backend:
+    build: ./backend
+    container_name: gestaobr-backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8003:8000"
+    environment:
+      DATABASE_URL: postgresql://gestaobr:gestaobr2026@postgres:5432/gestaobr
+    env_file:
+      - path: .env.vps
+        required: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gestaobr-net
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_API_URL=/gestaobr/api
+    container_name: gestaobr-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3005:3000"
+    environment:
+      BACKEND_URL: http://gestaobr-backend:8000
+      NEXT_PUBLIC_API_URL: /gestaobr/api
+      HOSTNAME: 0.0.0.0
+    depends_on:
+      - backend
+    networks:
+      - gestaobr-net
+
+networks:
+  gestaobr-net:
+    driver: bridge
+
+volumes:
+  gestaobr_postgres:
