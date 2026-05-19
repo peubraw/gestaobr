@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Search, MapPin, ChevronRight, Building2, Users, FileText, TrendingUp, Globe, Database, Activity, Map } from 'lucide-react';
 import { MunicipioBusca } from '@/lib/api';
 
@@ -112,9 +113,9 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {UFS.map(uf => (
-                <button key={uf} className="bg-white/10 hover:bg-gov-yellow hover:text-gov-dark text-white font-mono font-bold text-xs py-1.5 px-2.5 rounded transition-colors border border-white/20 hover:border-gov-yellow">
+                <Link key={uf} href={`/estado/${uf}`} className="bg-white/10 hover:bg-gov-yellow hover:text-gov-dark text-white font-mono font-bold text-xs py-1.5 px-2.5 rounded transition-colors border border-white/20 hover:border-gov-yellow">
                   {uf}
-                </button>
+                </Link>
               ))}
             </div>
           </div>

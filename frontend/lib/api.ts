@@ -467,6 +467,27 @@ export async function getAneel(ibge: string): Promise<Aneel | null> {
   } catch { return null; }
 }
 
+export interface EstadoMunicipio {
+  nome: string;
+  codigo_ibge: string;
+}
+
+export interface Estado {
+  uf: string;
+  nome: string;
+  capital: string;
+  regiao: string;
+  n_municipios: number;
+  populacao: number | null;
+  municipios: EstadoMunicipio[];
+}
+
+export async function getEstado(uf: string): Promise<Estado> {
+  const r = await fetch(`${API_BASE}/estados/${uf.toUpperCase()}`, { next: { revalidate: 3600 } });
+  if (!r.ok) throw new Error('Estado não encontrado');
+  return r.json();
+}
+
 export function formatNum(n: number | null, decimals = 0): string {
   if (n === null || n === undefined) return '—';
   return n.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });

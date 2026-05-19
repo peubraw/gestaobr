@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import routers.ana as ana  # pyright: ignore[reportImplicitRelativeImport]
 import routers.aneel as aneel  # pyright: ignore[reportImplicitRelativeImport]
 import routers.anp as anp  # pyright: ignore[reportImplicitRelativeImport]
+import routers.estados as estados  # pyright: ignore[reportImplicitRelativeImport]
 import routers.chat as chat  # pyright: ignore[reportImplicitRelativeImport]
 import routers.contratos as contratos  # pyright: ignore[reportImplicitRelativeImport]
 import routers.diario_oficial as diario_oficial  # pyright: ignore[reportImplicitRelativeImport]
@@ -63,6 +64,7 @@ app.include_router(datajud.router, prefix="/datajud", tags=["datajud"])
 app.include_router(empresas.router, prefix="/empresas", tags=["empresas"])
 app.include_router(ana.router, prefix="/ana", tags=["ana"])
 app.include_router(aneel.router, prefix="/aneel", tags=["aneel"])
+app.include_router(estados.router, prefix="/estados", tags=["estados"])
 
 @app.get("/health")
 def health():
