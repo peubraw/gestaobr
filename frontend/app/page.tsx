@@ -107,7 +107,7 @@ export default function HomePage() {
           </div>
           
           {/* UFs Grid */}
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto relative z-30">
             <p className="text-xs font-mono text-blue-300 mb-3 tracking-widest flex items-center justify-center gap-2">
               <Map size={14} /> EXPLORAR POR UNIDADE FEDERATIVA
             </p>
