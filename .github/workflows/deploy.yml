@@ -53,17 +53,23 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
 
     steps:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           command_timeout: 30m
+          envs: GHCR_TOKEN
           script: |
-            cd /var/www/gestaobr-src
-            git pull origin main
-            docker compose -f /var/www/gestaobr-src/docker-compose.vps.yml up --build -d
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u peubraw --password-stdin
+            cd /var/www/gestaobr
+            docker compose pull
+            docker compose up -d
             docker image prune -f
